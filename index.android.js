@@ -23,6 +23,8 @@ var SearchResultsPage = require('./SearchResultsPage');
 var PropertyListingPage = require('./PropertyListingPage');
 var FavouritesPage = require('./FavouritesPage');
 
+var _toolbarTitle;
+
 var _navigator;
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator && _navigator.getCurrentRoutes().length > 1) {
@@ -36,15 +38,17 @@ var RouteMapper = function(route, navigationOperations, onComponentRef){
 	console.log('rendering..... what?: ' + route.name);
 	switch(route.name){
 		case 'PropertySearch':
+			_toolbarTitle = 'PropertyCross';
 			console.log('PropertySearch');
 			return (
-				//<View style={{flex: 1}}>
-					//<Toolbar/>
+				<View style={{flex: 1}}>
+					<Toolbar/>
 					<PropertySearchPage navigator={navigationOperations}/>
-				// </View>
+				</View>
 			);
 			
 		case 'SearchResults':
+			_toolbarTitle = 'Search results';
 			console.log('SearchResults');
 			return (
 				<View style={{flex: 1}}>
@@ -54,6 +58,7 @@ var RouteMapper = function(route, navigationOperations, onComponentRef){
 			);
 			
 		case 'PropertyListing':
+			_toolbarTitle = 'Listing';
 			console.log('PropertyListing');
 			return (
 				<View style={{flex: 1}}>
@@ -63,27 +68,24 @@ var RouteMapper = function(route, navigationOperations, onComponentRef){
 			);
 			
 		case 'Favourites':
+			_toolbarTitle = 'Favourites';
 			console.log('Favourites');
 			return (
-				// <View style={{flex: 1}}>
-					// <Toolbar/>
+				<View style={{flex: 1}}>
+					<Toolbar/>
 					<FavouritesPage navigator={navigationOperations}/>
-				// </View>
+				</View>
 			);
 			
 		default:
+			_toolbarTitle = 'Error';
 			console.log('default');
 			return (
-				// <View style={{flex: 1}}>
-					// <Toolbar/>
-					<ToolbarAndroid
-					actions={[]}
-					style={styles.toolbar}
-					titleColor = "white"
-					title={"PropertyCross"}
-				/>
-					// <Text>{'Something went wrong!'}</Text>
-				// </View>
+				<View style={{flex: 1}}>
+					<Toolbar/>
+					
+					<Text>{'Something went wrong!'}</Text>
+				</View>
 				
 			);
 			
@@ -106,20 +108,34 @@ var PropertyCrossReactNative = React.createClass({
   },
 });
 
-// var Toolbar = React.createClass({
-	// render: function(){
-		// return(
-			// <View style={{flex: 1}}>
+var Toolbar = React.createClass({
+	
+	_onClick: function(){
+		_navigator.replace({name: 'Favourites'})
+	},
+	
+	render: function(){
+		return(
+			// <View>
+				<View style={styles.toolbar}>
+					<Text style={styles.toolbarButton}>{''}</Text>
+					<Text style={styles.toolbarTitle}>{_toolbarTitle}</Text>
+					<TouchableOpacity onPress = {this._onClick}>
+						<View style = {styles.box}>
+						<Text style={styles.toolbarButton}>{'Faves'}</Text>
+						</View>
+					</TouchableOpacity>
+				</View>
 				// <ToolbarAndroid
-					// actions={[]}
+					// actions={[{title: 'Faves', show: 'always', showWithText: true}]}
 					// style={styles.toolbar}
 					// titleColor = "white"
 					// title={"PropertyCross"}
 				// />
 			// </View>
-		// );
-	// }
-// });
+		);
+	}
+});
 
 var styles = StyleSheet.create({
   container: {
@@ -127,9 +143,35 @@ var styles = StyleSheet.create({
     backgroundColor: 'white',
   },
 	toolbar: {
-    backgroundColor: '#a9a9a9',
-    height: 56,
+    backgroundColor: '#81c04d',
+		paddingTop:10,
+		paddingBottom:10,
+		paddingRight:5,
+		flexDirection: 'row'
   },
+	box: {
+    backgroundColor: '#707070',
+    borderColor: '#717171',
+    borderWidth: 1,
+  },
+	toolbarButton:{
+		fontSize:20,
+		width: 70,
+		color: '#fff',
+		textAlign: 'center',
+		// borderStyle: 'dashed',
+		// borderWidth: 5,
+		// backgroundColor: '#527FE4',
+		// borderColor: '#fff'
+		
+	},
+	toolbarTitle:{
+		fontSize:20,
+		color: '#fff',
+		textAlign: 'center',
+		fontWeight: 'bold',
+		flex: 1
+	}
   
 });
 

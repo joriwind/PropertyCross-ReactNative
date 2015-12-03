@@ -7,9 +7,12 @@ var {
   TouchableOpacity,
 	Navigator,
   Text,
+	TextInput,
   View,
+	SwitchAndroid,
 } = React;
 
+var _state;
 
 var MOCKED_MOVIES_DATA = [
   {title: 'Title', year: '2015', posters: {thumbnail: 'http://i.imgur.com/UePbdph.jpg'}},
@@ -17,77 +20,122 @@ var MOCKED_MOVIES_DATA = [
 
 var PropertySearchPage = React.createClass({
 	render: function(){
-		return this.renderMovie();
-	
-	},
-	
-	renderMovie: function() {
-		//var TouchableElement = TouchableNativeFeedback;
-		var movie = MOCKED_MOVIES_DATA[0];
 		return (
-		
-		<View style={styles.container}>
-			
-			<TouchableOpacity onPress = {this.selectTwo}>
-				<Image
-				  source={{uri: movie.posters.thumbnail}}
-				  style={styles.thumbnail}
-				/>
-			</TouchableOpacity>
-			<View style={styles.rightContainer}>
-			  <Text style={styles.title}>{movie.title}</Text>
-			  <Text style={styles.year}>{movie.year}</Text>
+			<View style = {styles.container}>
+				<SearchUI/>
+				<ResultUI/>
 			</View>
-		</View>
 		);
+	
 	},
 	
-	selectTwo: function(){
-		this.props.navigator.push({name: 'Favourites',index:2,});
-		
-	},
 	
 });
 
+var ResultUI = React.createClass({
+	render: function(){
+		switch(_state){
+			case 'Initial':
+				return(
+					<View>
+					</View>
+				);
+			case 'Listed location':
+				return(
+					<View>
+					</View>
+				);
+			default: //Error state
+				return(
+					<View style = {styles.ResultUI}>
+						<Text style = {styles.text}>There was a problem with your search</Text>
+					</View>
+				);
+		}
+	}
+})
+
+var SearchUI = React.createClass({
+	_onClickGo: function(){
+		
+	},
+	
+	_onClickMyLocation: function(){
+		
+	},
+	
+	render: function(){
+		return(
+			<View style={styles.SearchUI}>
+				<Text style = {styles.text}>
+					<Text>Use the form below to search for houses to </Text>
+					<Text>buy. You can search by place-name, postcode, or</Text>
+					<Text> click 'My location', to search in your current location</Text>
+				</Text>
+				<TextInput 
+					style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+					//onChangeText={} 
+					//value={}
+				/>
+				<View style = {{ flexDirection: 'row'}}>
+					<TouchableOpacity 
+						style = {styles.button} 
+						onPress = {this._onClickGo}>
+						<Text style= {styles.buttonText}>Go</Text>
+					</TouchableOpacity>
+					<TouchableOpacity 
+						style = {styles.button} 
+						onPress = {this._onClickMyLocation}>
+						<Text style= {styles.buttonText}>My location</Text>
+					</TouchableOpacity>
+					
+				</View>
+			</View>
+		);
+	}
+});
+
 var styles = StyleSheet.create({
-  container: {
+	container:{
+    //backgroundColor: '#F0FCFF',
+	},
+	
+  SearchUI: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F0FCFF',
+		paddingTop: 5,
+    flexDirection: 'column',
+    //justifyContent: 'left',
+    alignItems: 'flex-start',
+    //backgroundColor: '#F0FCFF',
   },
-	rightContainer: {
-    flex: 1,
-    //backgroundColor: '#00FCFF',
+	button: {
+    backgroundColor: '#707070',
+    //borderColor: '#717171',
+    //borderWidth: 5,
+		//borderRadius:5,
+		paddingLeft: 5,
+		paddingRight: 5,
+		paddingTop: 1,
+		paddingBottom: 1,
+		marginLeft:5,
+		marginRight:5,
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  thumbnail: {
-    width: 53,
-    height: 81,
-  },
-  
-  listView: {
-    //paddingTop: 20,
-    backgroundColor: '#F5FCFF',
-  },
-  title: {
-    fontSize: 20,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  year: {
-    textAlign: 'center',
-  },
+	
+	buttonText: {
+		fontSize:17,
+		
+	},
+	
+	ResultUI: {
+		paddingTop: 5,
+		flex: 1,
+		flexDirection: 'column',
+	},
+	
+	text:{
+		fontSize: 15,
+	}
+	
 });
 
 module.exports = PropertySearchPage;
