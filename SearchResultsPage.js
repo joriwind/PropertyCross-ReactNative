@@ -11,6 +11,7 @@ var {
 	BackAndroid,
 } = React;
 
+
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator ) {
     _navigator.replace({name: 'PropertySearch', state: 'Initial'});
@@ -21,6 +22,7 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
 });
 
 var _navigator;
+var _toolbarTitle;
 
 var SearchResultsPage = React.createClass({
 	
@@ -40,15 +42,42 @@ var SearchResultsPage = React.createClass({
 	},
 	
 	render: function(){
+		console.log('Navigated to resultspage');
+		if(this.props.resultsInfo){
+			_toolbarTitle = this.props.resultsInfo.lengthSearchResults
+											 + " of " + this.props.resultsInfo.total_results + " matches";
+		}else{
+			_toolbarTitle = 'Search results';
+		}
 		_navigator = this.props.navigator;
-		console.log('Render search results');
+		
+		console.log('Render search results'); //{Toolbar}
+		return(
+		<View style={{flex: 1}}>
+			{this._renderToolbar()}
+			{this._renderList()}
+			</View>
+		);
+	
+	},
+	
+	_renderList: function(){
 		return(
 			<ListView
 				dataSource={this.state.dataSource}
 				renderRow={this._renderRow}
 			/>
-		);
+				);
+	},
 	
+	_renderToolbar: function(){
+		return(
+			<View style={styles.toolbar}>
+				<Text style={styles.toolbarButton}>{''}</Text>
+				<Text style={styles.toolbarTitle}>{_toolbarTitle}</Text>
+				<Text style={styles.toolbarButton}>{''}</Text>
+			</View>
+		);
 	},
 	
 	_renderRow(rowData) {
@@ -74,6 +103,12 @@ var SearchResultsPage = React.createClass({
 	_onRowPressed(propertyGuid){
 		var property = this.props.searchResults.filter(prop => prop.guid === propertyGuid)[0];
 		console.log(JSON.stringify(property));
+		
+		this.props.navigator.replace({
+        name: 'PropertyListing',
+        property:  property,
+      }, 1);
+				
 	},
 	
 	
@@ -112,7 +147,33 @@ var styles = StyleSheet.create({
   rowContainer: {
     flexDirection: 'row',
     padding: 10
-  }
+  },
+	
+	toolbar: {
+    backgroundColor: '#81c04d',
+		paddingTop:10,
+		paddingBottom:10,
+		paddingRight:5,
+		flexDirection: 'row'
+  },
+	toolbarBox: {
+    backgroundColor: '#707070',
+    borderColor: '#717171',
+    borderWidth: 1,
+  },
+	toolbarButton:{
+		fontSize:20,
+		width: 70,
+		color: '#fff',
+		textAlign: 'center',		
+	},
+	toolbarTitle:{
+		fontSize:20,
+		color: '#fff',
+		textAlign: 'center',
+		fontWeight: 'bold',
+		flex: 1
+	},
 });
 
 module.exports = SearchResultsPage;

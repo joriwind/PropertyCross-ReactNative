@@ -17,15 +17,21 @@ var {
 
 var SearchUI;
 var ResultUI;
+var Toolbar;
+var _toolbarTitle;
 
 
 var PropertySearchPage = React.createClass({
 	render: function(){
-			SearchUI = this._renderSearchUI();
-			ResultUI = this._renderResultUI();
+		_toolbarTitle = 'PropertyCross';
+		
+		SearchUI = this._renderSearchUI();
+		ResultUI = this._renderResultUI();
+		Toolbar = this._renderToolbar();
 		return (
 		
 			<View style = {styles.container}>
+				{Toolbar}
 				{SearchUI}
 				{ResultUI}
 			</View>
@@ -88,6 +94,24 @@ var PropertySearchPage = React.createClass({
 	
 	_onClickMyLocation: function(){
 		
+	},
+	
+	_navigateToFaves: function(){
+		_navigator.replace({name: 'Favourites'})
+	},
+	
+	_renderToolbar: function(){
+		return(
+			<View style={styles.toolbar}>
+				<Text style={styles.toolbarButton}>{''}</Text>
+				<Text style={styles.toolbarTitle}>{_toolbarTitle}</Text>
+				<TouchableOpacity onPress = {this._navigateToFaves}>
+					<View style = {styles.toolbarBox}>
+					<Text style={styles.toolbarButton}>{'Faves'}</Text>
+					</View>
+				</TouchableOpacity>
+			</View>
+		);
 	},
 	
 	_renderSearchUI: function(){
@@ -224,7 +248,33 @@ var styles = StyleSheet.create({
 	
 	text:{
 		fontSize: 15,
-	}
+	},
+	
+	toolbar: {
+    backgroundColor: '#81c04d',
+		paddingTop:10,
+		paddingBottom:10,
+		paddingRight:5,
+		flexDirection: 'row'
+  },
+	toolbarBox: {
+    backgroundColor: '#707070',
+    borderColor: '#717171',
+    borderWidth: 1,
+  },
+	toolbarButton:{
+		fontSize:20,
+		width: 70,
+		color: '#fff',
+		textAlign: 'center',		
+	},
+	toolbarTitle:{
+		fontSize:20,
+		color: '#fff',
+		textAlign: 'center',
+		fontWeight: 'bold',
+		flex: 1
+	},
 	
 });
 

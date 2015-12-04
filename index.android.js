@@ -23,8 +23,6 @@ var SearchResultsPage = require('./SearchResultsPage');
 var PropertyListingPage = require('./PropertyListingPage');
 var FavouritesPage = require('./FavouritesPage');
 
-var _toolbarTitle;
-
 var _navigator;
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator && _navigator.getCurrentRoutes().length > 1) {
@@ -36,69 +34,55 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
 var RouteMapper = function(route, navigationOperations, onComponentRef){
 	_navigator = navigationOperations;
 	console.log('rendering..... what?: ' + route.name);
+	
 	switch(route.name){
 		case 'PropertySearch':
-			_toolbarTitle = 'PropertyCross';
 			console.log('PropertySearch');
 			return (
 				<View style={{flex: 1}}>
-					<Toolbar/>
 					<PropertySearchPage navigator={navigationOperations}/>
 				</View>
 			);
 			
 		case 'SearchResults':
-			if(route.resultsInfo){
-				_toolbarTitle = route.resultsInfo.lengthSearchResults
-												 + " of " + route.resultsInfo.total_results + " matches";
-				
-			}else{
-				_toolbarTitle = 'Search results';
-				
-			}
 			console.log('SearchResults');
 			return (
 				<View style={{flex: 1}}>
-					<Toolbar/>
-					<SearchResultsPage navigator={navigationOperations} searchResults={route.searchResults}/>
+					<SearchResultsPage navigator={navigationOperations} searchResults={route.searchResults} resultsInfo = {route.resultsInfo}/>
 				</View>
 			);
 			
 		case 'PropertyListing':
-			_toolbarTitle = 'Listing';
 			console.log('PropertyListing');
 			return (
 				<View style={{flex: 1}}>
-					<Toolbar/>
-					<PropertyListingPage navigator={navigationOperations}/>
+					<PropertyListingPage navigator={navigationOperations} property={route.property}/>
 				</View>
 			);
 			
 		case 'Favourites':
-			_toolbarTitle = 'Favourites';
 			console.log('Favourites');
 			return (
 				<View style={{flex: 1}}>
-					<Toolbar/>
 					<FavouritesPage navigator={navigationOperations}/>
 				</View>
 			);
 			
 		default:
-			_toolbarTitle = 'Error';
 			console.log('default');
 			return (
 				<View style={{flex: 1}}>
-					<Toolbar/>
+					<View style={styles.toolbar}>
+						<Text style={styles.toolbarButton}>{''}</Text>
+						<Text style={styles.toolbarTitle}>{'Error'}</Text>
+						<Text style={styles.toolbarButton}>{''}</Text>
+					</View>
 					
 					<Text>{'Something went wrong!'}</Text>
 				</View>
 				
 			);
-			
 	}
-	
-		
 };
 
 var PropertyCrossReactNative = React.createClass({
@@ -115,28 +99,6 @@ var PropertyCrossReactNative = React.createClass({
   },
 });
 
-var Toolbar = React.createClass({
-	
-	_onClick: function(){
-		_navigator.replace({name: 'Favourites'})
-	},
-	
-	render: function(){
-		return(
-			// <View>
-				<View style={styles.toolbar}>
-					<Text style={styles.toolbarButton}>{''}</Text>
-					<Text style={styles.toolbarTitle}>{_toolbarTitle}</Text>
-					<TouchableOpacity onPress = {this._onClick}>
-						<View style = {styles.box}>
-						<Text style={styles.toolbarButton}>{'Faves'}</Text>
-						</View>
-					</TouchableOpacity>
-				</View>
-		);
-	}
-});
-
 var styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -149,7 +111,7 @@ var styles = StyleSheet.create({
 		paddingRight:5,
 		flexDirection: 'row'
   },
-	box: {
+	toolbarBox: {
     backgroundColor: '#707070',
     borderColor: '#717171',
     borderWidth: 1,
@@ -159,10 +121,7 @@ var styles = StyleSheet.create({
 		width: 70,
 		color: '#fff',
 		textAlign: 'center',
-		// borderStyle: 'dashed',
-		// borderWidth: 5,
-		// backgroundColor: '#527FE4',
-		// borderColor: '#fff'
+		
 		
 	},
 	toolbarTitle:{
@@ -171,7 +130,7 @@ var styles = StyleSheet.create({
 		textAlign: 'center',
 		fontWeight: 'bold',
 		flex: 1
-	}
+	},
   
 });
 
