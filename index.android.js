@@ -126,13 +126,6 @@ var Toolbar = React.createClass({
 						</View>
 					</TouchableOpacity>
 				</View>
-				// <ToolbarAndroid
-					// actions={[{title: 'Faves', show: 'always', showWithText: true}]}
-					// style={styles.toolbar}
-					// titleColor = "white"
-					// title={"PropertyCross"}
-				// />
-			// </View>
 		);
 	}
 });

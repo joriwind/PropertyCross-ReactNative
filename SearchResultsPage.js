@@ -8,9 +8,19 @@ var {
   Text,
   View,
 	ListView,
-	
+	BackAndroid,
 } = React;
 
+BackAndroid.addEventListener('hardwareBackPress', () => {
+  if (_navigator ) {
+    _navigator.replace({name: 'PropertySearch', state: 'Initial'});
+    return true;
+	}else{
+		return false;
+	}
+});
+
+var _navigator;
 
 var SearchResultsPage = React.createClass({
 	
@@ -30,6 +40,7 @@ var SearchResultsPage = React.createClass({
 	},
 	
 	render: function(){
+		_navigator = this.props.navigator;
 		console.log('Render search results');
 		return(
 			<ListView
