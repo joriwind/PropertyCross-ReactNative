@@ -1,6 +1,9 @@
 'use strict';
 
 var React = require('react-native');
+var GiftedSpinner = require('react-native-gifted-spinner');
+
+
 var {
   Image,
   StyleSheet,
@@ -12,59 +15,69 @@ var {
 	SwitchAndroid,
 } = React;
 
-var _state;
+var SearchUI;
+var ResultUI;
 
-var MOCKED_MOVIES_DATA = [
-  {title: 'Title', year: '2015', posters: {thumbnail: 'http://i.imgur.com/UePbdph.jpg'}},
-];
 
 var PropertySearchPage = React.createClass({
 	render: function(){
+			SearchUI = this._renderSearchUI();
+			ResultUI = this._renderResultUI();
 		return (
+		
 			<View style = {styles.container}>
-				<SearchUI/>
-				<ResultUI/>
+				{SearchUI}
+				{ResultUI}
 			</View>
 		);
 	
 	},
 	
+	getInitialState: function() {
+		return {
+			state: 'Initial',
+		  searchString: '',
+		};
+	},
 	
-});
-
-var ResultUI = React.createClass({
-	render: function(){
-		switch(_state){
-			case 'Initial':
-				return(
-					<View>
-					</View>
-				);
-			case 'Listed location':
-				return(
-					<View>
-					</View>
-				);
-			default: //Error state
-				return(
-					<View style = {styles.ResultUI}>
-						<Text style = {styles.text}>There was a problem with your search</Text>
-					</View>
-				);
-		}
-	}
-})
-
-var SearchUI = React.createClass({
 	_onClickGo: function(){
+		this.setState({ state: 'Loading' });
+		console.log("Searching for: " + this.state.searchString);
+		var query = urlForQueryAndPage('place_name', this.state.searchString, 1);
+    this._executeQuery(query);
 		
 	},
+	
+	_executeQuery: function(query){
+		
+    fetch(query)
+      .then(response => response.json())
+      .then(json => this._handleResponse(json.response))
+      .catch(error => {
+        this.setState({
+          state: 'Error'
+        });
+      });
+	},
+	
+	_handleResponse(response) {
+		console.log("Response!" + response.listings);//JSON.stringify(response.listings)
+    if (response.application_response_code.substr(0, 1) === '1') {
+      this.props.navigator.replace({
+        name: 'SearchResults',
+        passProps: {listings: response.listings}
+      });
+    } else {
+      this.setState({state: 'Error'});
+    }
+  },
 	
 	_onClickMyLocation: function(){
 		
 	},
 	
-	render: function(){
+	_renderSearchUI: function(){
+		
 		return(
 			<View style={styles.SearchUI}>
 				<Text style = {styles.text}>
@@ -74,8 +87,8 @@ var SearchUI = React.createClass({
 				</Text>
 				<TextInput 
 					style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-					//onChangeText={} 
-					//value={}
+					onChangeText={(searchString) => this.setState({searchString})}
+					value={this.state.searchString}
 				/>
 				<View style = {{ flexDirection: 'row'}}>
 					<TouchableOpacity 
@@ -92,8 +105,61 @@ var SearchUI = React.createClass({
 				</View>
 			</View>
 		);
-	}
+	},
+	
+	_renderResultUI: function(){
+		if(this.props.state){
+			this.state.state = this.props.state;
+			console.log("PropertySearchPage changed state: " + this.props.state);
+		}
+		switch(this.state.state){
+			case 'Initial':
+				return(
+					<View>
+					</View>
+				);
+			case 'Listed location':
+				return(
+					<View>
+					</View>
+				);
+			case 'Loading':
+				return(
+				<View style = {styles.ResultUI_loading}>
+					<GiftedSpinner/>
+				</View>
+				);
+			default: //Error state
+				return(
+					<View style = {styles.ResultUI}>
+						<Text style = {styles.text}>There was a problem with your search</Text>
+						
+					</View>
+				);
+		}
+	},
+	
+	
 });
+
+
+function urlForQueryAndPage(key, value, pageNumber) {
+  var data = {
+      country: 'uk',
+      pretty: '1',
+      encoding: 'json',
+      listing_type: 'buy',
+      action: 'search_listings',
+      page: pageNumber
+  };
+  data[key] = value;
+
+  var querystring = Object.keys(data)
+    .map(key => key + '=' + encodeURIComponent(data[key]))
+    .join('&');
+
+  return 'http://api.nestoria.co.uk/api?' + querystring;
+};
 
 var styles = StyleSheet.create({
 	container:{
@@ -130,7 +196,17 @@ var styles = StyleSheet.create({
 		paddingTop: 5,
 		flex: 1,
 		flexDirection: 'column',
+
 	},
+	
+	ResultUI_loading: {
+		paddingTop: 5,
+		flex: 1,
+		flexDirection: 'column',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	
 	
 	text:{
 		fontSize: 15,
