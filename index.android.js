@@ -35,7 +35,7 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
 });
 var RouteMapper = function(route, navigationOperations, onComponentRef){
 	_navigator = navigationOperations;
-	console.log('rendering..... what?: ' + route.name);
+	console.log('rendering..... what?: ' + JSON.stringify(route));
 	switch(route.name){
 		case 'PropertySearch':
 			_toolbarTitle = 'PropertyCross';
@@ -53,7 +53,7 @@ var RouteMapper = function(route, navigationOperations, onComponentRef){
 			return (
 				<View style={{flex: 1}}>
 					<Toolbar/>
-					<SearchResultsPage navigator={navigationOperations}/>
+					<SearchResultsPage navigator={navigationOperations} searchResults={route.searchResults}/>
 				</View>
 			);
 			

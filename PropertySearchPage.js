@@ -65,7 +65,7 @@ var PropertySearchPage = React.createClass({
     if (response.application_response_code.substr(0, 1) === '1') {
       this.props.navigator.replace({
         name: 'SearchResults',
-        passProps: {listings: response.listings}
+        searchResults:  response.listings
       });
     } else {
       this.setState({state: 'Error'});
