@@ -62,10 +62,24 @@ var PropertySearchPage = React.createClass({
 	
 	_handleResponse(response) {
 		console.log("Response!" + response.listings);//JSON.stringify(response.listings)
+		try{
+		var resultsInfo = {
+			lengthSearchResults: response.listings.length, 
+			total_results: response.total_results,
+			pageSearchResults: response.page,
+			total_pages: response.total_pages
+			};
+		}catch(err){
+			console.log("Error: " + err);
+		}
+		console.log("Total results: " + resultsInfo.total_results);
+		console.log("Given results: " + resultsInfo.lengthSearchResults);
+		
     if (response.application_response_code.substr(0, 1) === '1') {
       this.props.navigator.replace({
         name: 'SearchResults',
-        searchResults:  response.listings
+        searchResults:  response.listings,
+				resultsInfo: resultsInfo,
       });
     } else {
       this.setState({state: 'Error'});

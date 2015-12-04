@@ -35,7 +35,7 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
 });
 var RouteMapper = function(route, navigationOperations, onComponentRef){
 	_navigator = navigationOperations;
-	console.log('rendering..... what?: ' + JSON.stringify(route));
+	console.log('rendering..... what?: ' + route.name);
 	switch(route.name){
 		case 'PropertySearch':
 			_toolbarTitle = 'PropertyCross';
@@ -48,7 +48,14 @@ var RouteMapper = function(route, navigationOperations, onComponentRef){
 			);
 			
 		case 'SearchResults':
-			_toolbarTitle = 'Search results';
+			if(route.resultsInfo){
+				_toolbarTitle = route.resultsInfo.lengthSearchResults
+												 + " of " + route.resultsInfo.total_results + " matches";
+				
+			}else{
+				_toolbarTitle = 'Search results';
+				
+			}
 			console.log('SearchResults');
 			return (
 				<View style={{flex: 1}}>
