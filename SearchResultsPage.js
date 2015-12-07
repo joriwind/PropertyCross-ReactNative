@@ -13,12 +13,11 @@ var {
 
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator ) {
+  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
     _navigator.pop();
     return true;
-	}else{
-		return false;
-	}
+  }
+  return false;
 });
 
 var _navigator;
@@ -107,8 +106,7 @@ var SearchResultsPage = React.createClass({
 		this.props.navigator.push({
         id: 'PropertyListing',
         property:  property,
-				index: 1,
-      }, 1);
+      });
 				
 	},
 	

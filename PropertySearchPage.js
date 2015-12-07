@@ -9,6 +9,7 @@ var {
   StyleSheet,
   TouchableOpacity,
 	Navigator,
+	BackAndroid,
   Text,
 	TextInput,
   View,
@@ -19,11 +20,21 @@ var SearchUI;
 var ResultUI;
 var Toolbar;
 var _toolbarTitle;
+var _navigator;
+
+BackAndroid.addEventListener('hardwareBackPress', () => {
+  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
+    _navigator.pop();
+    return true;
+  }
+  return false;
+});
 
 
 var PropertySearchPage = React.createClass({
 	render: function(){
 		_toolbarTitle = 'PropertyCross';
+		_navigator = this.props.navigator;
 		
 		SearchUI = this._renderSearchUI();
 		ResultUI = this._renderResultUI();
@@ -81,12 +92,16 @@ var PropertySearchPage = React.createClass({
 		console.log("Total results: " + resultsInfo.total_results);
 		console.log("Given results: " + resultsInfo.lengthSearchResults);
 		
+		
     if (response.application_response_code.substr(0, 1) === '1') {
       this.props.navigator.push({
         id: 'SearchResults',
         searchResults:  response.listings,
 				resultsInfo: resultsInfo,
       });
+			if(this.state.state = 'Loading'){
+				this.state.state = 'Initial';
+			}
     } else {
       this.setState({state: 'Error'});
     }

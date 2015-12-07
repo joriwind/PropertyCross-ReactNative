@@ -7,7 +7,6 @@
 var React = require('react-native');
 var {
   AppRegistry,
-  BackAndroid,
   ToolbarAndroid,
   Platform,
   Navigator,
@@ -24,13 +23,6 @@ var PropertyListingPage = require('./PropertyListingPage');
 var FavouritesPage = require('./FavouritesPage');
 
 var _navigator;
-BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
-    _navigator.pop();
-    return true;
-  }
-  return false;
-});
 
 
 var PropertyCrossReactNative = React.createClass({
@@ -109,23 +101,23 @@ var PropertyCrossReactNative = React.createClass({
     if (navigator !== this._navigator) {
       this._navigator = navigator;
 
-      if (navigator) {
-        var callback = (event) => {
-          console.log(
-            `TabBarExample: event ${event.type}`,
-            {
-              route: JSON.stringify(event.data.route),
-              target: event.target,
-              type: event.type,
-            }
-          );
-        };
+      // if (navigator) {
+        // var callback = (event) => {
+          // console.log(
+            // `TabBarExample: event ${event.type}`,
+            // {
+              // route: JSON.stringify(event.data.route),
+              // target: event.target,
+              // type: event.type,
+            // }
+          // );
+        // };
         // Observe focus change events from the owner.
-        this._listeners = [
-          navigator.navigationContext.addListener('willfocus', callback),
-          navigator.navigationContext.addListener('didfocus', callback),
-        ];
-      }
+        // this._listeners = [
+          // navigator.navigationContext.addListener('willfocus', callback),
+          // navigator.navigationContext.addListener('didfocus', callback),
+        // ];
+      // }
     }
   },
 });

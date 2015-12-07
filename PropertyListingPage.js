@@ -11,18 +11,18 @@ var {
 } = React;
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator ) {
-    _navigator.pop();
+  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
+    _navigator.popToRoute({id: 'SearchResults'});
     return true;
-	}else{
-		return false;
-	}
+  }
+  return false;
 });
 
 var _navigator;
 
 var PropertyListingPage = React.createClass({
 	render: function(){
+		console.log('Navigated to PropertyListingPage');
 		_navigator = this.props.navigator;
 		var property = this.props.property;
     var stats = property.bedroom_number + ' bed ' + property.property_type;

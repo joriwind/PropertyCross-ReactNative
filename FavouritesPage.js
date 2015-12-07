@@ -11,12 +11,11 @@ var {
 } = React;
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator ) {
+  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
     _navigator.pop();
     return true;
-	}else{
-		return false;
-	}
+  }
+  return false;
 });
 
 var _navigator;
