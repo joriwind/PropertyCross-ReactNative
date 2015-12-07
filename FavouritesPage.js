@@ -5,9 +5,21 @@ var {
   Image,
   StyleSheet,
   TouchableOpacity,
+	BackAndroid,
   Text,
   View,
 } = React;
+
+BackAndroid.addEventListener('hardwareBackPress', () => {
+  if (_navigator ) {
+    _navigator.pop();
+    return true;
+	}else{
+		return false;
+	}
+});
+
+var _navigator;
 
 
 var MOCKED_MOVIES_DATA = [
@@ -16,6 +28,7 @@ var MOCKED_MOVIES_DATA = [
 
 var FavouritesPage = React.createClass({
 	render: function(){
+		_navigator = this.props.navigator;
 		return this.renderMovie();
 	
 	},

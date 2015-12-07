@@ -82,8 +82,8 @@ var PropertySearchPage = React.createClass({
 		console.log("Given results: " + resultsInfo.lengthSearchResults);
 		
     if (response.application_response_code.substr(0, 1) === '1') {
-      this.props.navigator.replace({
-        name: 'SearchResults',
+      this.props.navigator.push({
+        id: 'SearchResults',
         searchResults:  response.listings,
 				resultsInfo: resultsInfo,
       });
@@ -97,7 +97,7 @@ var PropertySearchPage = React.createClass({
 	},
 	
 	_navigateToFaves: function(){
-		_navigator.replace({name: 'Favourites'})
+		this.props.navigator.push({id: 'Favourites'})
 	},
 	
 	_renderToolbar: function(){

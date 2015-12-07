@@ -5,13 +5,25 @@ var {
   Image,
   StyleSheet,
   TouchableOpacity,
+	BackAndroid,
   Text,
   View,
 } = React;
 
+BackAndroid.addEventListener('hardwareBackPress', () => {
+  if (_navigator ) {
+    _navigator.pop();
+    return true;
+	}else{
+		return false;
+	}
+});
+
+var _navigator;
 
 var PropertyListingPage = React.createClass({
 	render: function(){
+		_navigator = this.props.navigator;
 		var property = this.props.property;
     var stats = property.bedroom_number + ' bed ' + property.property_type;
     if (property.bathroom_number) {

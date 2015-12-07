@@ -31,71 +31,102 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
   }
   return false;
 });
-var RouteMapper = function(route, navigationOperations, onComponentRef){
-	_navigator = navigationOperations;
-	console.log('rendering..... what?: ' + route.name);
-	
-	switch(route.name){
-		case 'PropertySearch':
-			console.log('PropertySearch');
-			return (
-				<View style={{flex: 1}}>
-					<PropertySearchPage navigator={navigationOperations}/>
-				</View>
-			);
-			
-		case 'SearchResults':
-			console.log('SearchResults');
-			return (
-				<View style={{flex: 1}}>
-					<SearchResultsPage navigator={navigationOperations} searchResults={route.searchResults} resultsInfo = {route.resultsInfo}/>
-				</View>
-			);
-			
-		case 'PropertyListing':
-			console.log('PropertyListing');
-			return (
-				<View style={{flex: 1}}>
-					<PropertyListingPage navigator={navigationOperations} property={route.property}/>
-				</View>
-			);
-			
-		case 'Favourites':
-			console.log('Favourites');
-			return (
-				<View style={{flex: 1}}>
-					<FavouritesPage navigator={navigationOperations}/>
-				</View>
-			);
-			
-		default:
-			console.log('default');
-			return (
-				<View style={{flex: 1}}>
-					<View style={styles.toolbar}>
-						<Text style={styles.toolbarButton}>{''}</Text>
-						<Text style={styles.toolbarTitle}>{'Error'}</Text>
-						<Text style={styles.toolbarButton}>{''}</Text>
-					</View>
-					
-					<Text>{'Something went wrong!'}</Text>
-				</View>
-				
-			);
-	}
-};
+
 
 var PropertyCrossReactNative = React.createClass({
   render: function() {
-			var initialRoute = {name: 'PropertySearch'};
+			var initialRoute = {id: 'PropertySearch'};
     return (
 			<Navigator
+				ref={this._setNavigatorRef}
 				style={styles.container}
 				initialRoute={initialRoute}
-				configureScene={() => Navigator.SceneConfigs.fadeAndroid}
-				renderScene={RouteMapper}
+				renderScene={this.routeMapper}
+				configureScene={(route) => {
+          if (route.sceneConfig) {
+            return route.sceneConfig;
+          }
+          return Navigator.SceneConfigs.FloatFromBottom;
+        }}
 			/>
     );
+  },
+	
+	routeMapper: function(route, nav){
+	
+		console.log('rendering..... what?: ' + route.id);
+		
+		switch(route.id){
+			case 'PropertySearch':
+				console.log('PropertySearch');
+				return (
+					<PropertySearchPage navigator={nav}/>
+					
+				);
+				
+			case 'SearchResults':
+				console.log('SearchResults');
+				return (
+					
+						<SearchResultsPage navigator={nav} searchResults={route.searchResults} resultsInfo = {route.resultsInfo}/>
+					
+				);
+				
+			case 'PropertyListing':
+				console.log('PropertyListing');
+				return (
+					
+						<PropertyListingPage navigator={nav} property={route.property}/>
+					
+				);
+				
+			case 'Favourites':
+				console.log('Favourites');
+				return (
+					
+						<FavouritesPage navigator={nav}/>
+					
+				);
+				
+			default:
+				console.log('default');
+				return (
+					<View style={{flex: 1}}>
+						<View style={styles.toolbar}>
+							<Text style={styles.toolbarButton}>{''}</Text>
+							<Text style={styles.toolbarTitle}>{'Error'}</Text>
+							<Text style={styles.toolbarButton}>{''}</Text>
+						</View>
+						
+						<Text>{'Something went wrong!'}</Text>
+					</View>
+					
+				);
+		}
+	},
+	
+	_setNavigatorRef: function(navigator) {
+    if (navigator !== this._navigator) {
+      this._navigator = navigator;
+
+      if (navigator) {
+        var callback = (event) => {
+          console.log(
+            `TabBarExample: event ${event.type}`,
+            {
+              route: JSON.stringify(event.data.route),
+              target: event.target,
+              type: event.type,
+            }
+          );
+        };
+        // Observe focus change events from the owner.
+        this._listeners = [
+          navigator.navigationContext.addListener('willfocus', callback),
+          navigator.navigationContext.addListener('didfocus', callback),
+        ];
+      }
+    }
   },
 });
 

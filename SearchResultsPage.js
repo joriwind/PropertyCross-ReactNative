@@ -14,7 +14,7 @@ var {
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator ) {
-    _navigator.replace({name: 'PropertySearch', state: 'Initial'});
+    _navigator.pop();
     return true;
 	}else{
 		return false;
@@ -104,9 +104,10 @@ var SearchResultsPage = React.createClass({
 		var property = this.props.searchResults.filter(prop => prop.guid === propertyGuid)[0];
 		console.log(JSON.stringify(property));
 		
-		this.props.navigator.replace({
-        name: 'PropertyListing',
+		this.props.navigator.push({
+        id: 'PropertyListing',
         property:  property,
+				index: 1,
       }, 1);
 				
 	},
