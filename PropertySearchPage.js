@@ -13,7 +13,9 @@ var {
   Text,
 	TextInput,
   View,
-	SwitchAndroid,
+	ListView,
+	TouchableHighlight,
+	AsyncStorage,
 } = React;
 
 var SearchUI;
@@ -21,6 +23,8 @@ var ResultUI;
 var Toolbar;
 var _toolbarTitle;
 var _navigator;
+
+var STORAGE_KEY_RECENT : '@RecentSearches:key';
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator && _navigator.getCurrentRoutes().length > 1) {
@@ -32,6 +36,75 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
 
 
 var PropertySearchPage = React.createClass({
+	componentDidMount() {
+		if(this.state.state = 'Initial'){
+			console.log("Retrieving db!");
+			this._loadInitialStateRecentSearches().done();
+		}
+  },
+	
+	async _loadInitialStateRecentSearches() {
+    try {
+			console.log("Get Item from db, key: " + STORAGE_KEY_RECENT);
+      var value = await AsyncStorage.getItem(STORAGE_KEY_RECENT);
+      if (value !== null){
+				//console.log("STRING:::::: " + value);
+				var jsonObject = JSON.parse(value);
+				console.log("JSON:::::::: " + jsonObject);
+				console.log("First object retrieved from DB: " + jsonObject[0].resultsInfo.title);
+        this.setState({recentSearches: this.state.recentSearches.cloneWithRows(jsonObject)});
+      } else {
+        this.setState({recentSearches: this.state.recentSearches.cloneWithRows([{resultsInfo: {title: 'No recent searches', total_results:0}}])});
+      }
+    } catch (error) {
+			console.log("AsyncStorage GET error: " + error);
+      this.setState({state: 'Error'});
+    }
+  },
+	
+	async _addValueRecentSearches(value) {
+    
+    try {
+			var storedValue = await AsyncStorage.getItem(STORAGE_KEY_RECENT);
+						
+			if(storedValue !== null){
+				var jsonArray = JSON.parse(storedValue);
+				var filterObject = jsonArray.filter(prop => prop.resultsInfo.title === value.resultsInfo.title)[0];
+				console.log("Filtered object: " + filterObject);
+				
+				if(filterObject === undefined){
+					var array = ([value]).concat(jsonArray);
+					await AsyncStorage.setItem(STORAGE_KEY_RECENT, JSON.stringify(array));
+					console.log('Added search to recentSearches: ' + JSON.stringify(value.resultsInfo));
+					
+				}else{
+					jsonArray.forEach(function(result, index) {
+						if(result.resultsInfo.title === filterObject.resultsInfo.title) {
+							//Set to above new element
+							jsonArray.splice(index, 1);
+						}    
+					});
+					var array = ([value]).concat(jsonArray);
+					await AsyncStorage.setItem(STORAGE_KEY_RECENT, JSON.stringify(array));
+					console.log('Changed search of recentSearches to: ' + JSON.stringify(value.resultsInfo));
+				}
+			}else{
+				await AsyncStorage.setItem(STORAGE_KEY_RECENT, JSON.stringify([value]));
+			}
+    } catch (error) {
+      console.log('AsyncStorage ADD error: ' + error.message);
+    }
+  },
+
+  async _removeStorageRecentSearches() {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY_RECENT);
+      console.log('Selection removed from disk.');
+    } catch (error) {
+      console.log('AsyncStorage REMOVE error: ' + error.message);
+    }
+  },
+	
 	render: function(){
 		_toolbarTitle = 'PropertyCross';
 		_navigator = this.props.navigator;
@@ -51,9 +124,13 @@ var PropertySearchPage = React.createClass({
 	},
 	
 	getInitialState: function() {
+		STORAGE_KEY_RECENT = '@RecentSearches:key';
+		// this._removeStorageRecentSearches();
+		var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
 		return {
 			state: 'Initial',
 		  searchString: '',
+			recentSearches: ds.cloneWithRows([{resultsInfo: {title: 'No recent searches', total_results:0}}]),
 		};
 	},
 	
@@ -79,19 +156,22 @@ var PropertySearchPage = React.createClass({
 	
 	_handleResponse(response) {
 		console.log("Response!" + response.listings);//JSON.stringify(response.listings)
-		try{
+		
 		var resultsInfo = {
+			title: response.locations[0].title,
 			lengthSearchResults: response.listings.length, 
 			total_results: response.total_results,
 			pageSearchResults: response.page,
 			total_pages: response.total_pages
 			};
-		}catch(err){
-			console.log("Error: " + err);
-		}
+		
+		console.log("Title of location: " + resultsInfo.title);
 		console.log("Total results: " + resultsInfo.total_results);
 		console.log("Given results: " + resultsInfo.lengthSearchResults);
-		
+				
+		//Add search to asyncstorage.
+		var storageValue = {resultsInfo: resultsInfo};
+		this._addValueRecentSearches(storageValue);
 		
     if (response.application_response_code.substr(0, 1) === '1') {
       this.props.navigator.push({
@@ -168,7 +248,16 @@ var PropertySearchPage = React.createClass({
 		switch(this.state.state){
 			case 'Initial':
 				return(
-					<View>
+					<View style={styles.recentSearches}>
+						<Text>Recent searches:</Text>
+						<View style={styles.recentSearchesList}>
+						<ListView
+							style= {styles.recentSearchesList}
+							dataSource={this.state.recentSearches}
+							renderRow={this._renderRowRecentSearch}
+						/>
+						</View>
+						
 					</View>
 				);
 			case 'Listed location':
@@ -190,6 +279,33 @@ var PropertySearchPage = React.createClass({
 					</View>
 				);
 		}
+	},
+	
+	_renderRowRecentSearch: function(rowData){
+		return (
+      <TouchableHighlight onPress={() => this._onClickRecentSearch(rowData.resultsInfo.title)}
+					underlayColor='#dddddd'>
+				<View>
+					<View style={styles.rowRecentSearch}>
+						<Text>{rowData.resultsInfo.title} </Text>
+						<Text>({rowData.resultsInfo.total_results})</Text>
+						
+					</View>
+					<View style={styles.separator}/>
+				</View>
+			</TouchableHighlight>
+    );
+		
+	},
+	
+	_onClickRecentSearch: function(title){
+		//var value = this.state.recentSearches.filter(prop => prop.resultsInfo.title === title)[0];
+		this.setState({ state: 'Loading' });
+		console.log("Searching again for: " + title);
+		var query = urlForQueryAndPage('place_name', title, 1);
+    this._executeQuery(query);
+		
+			
 	},
 	
 	
@@ -217,10 +333,12 @@ function urlForQueryAndPage(key, value, pageNumber) {
 var styles = StyleSheet.create({
 	container:{
     //backgroundColor: '#F0FCFF',
+		flex: 1,
+		flexDirection: 'column',
 	},
 	
   SearchUI: {
-    flex: 1,
+    
 		paddingTop: 5,
     flexDirection: 'column',
     //justifyContent: 'left',
@@ -289,6 +407,27 @@ var styles = StyleSheet.create({
 		textAlign: 'center',
 		fontWeight: 'bold',
 		flex: 1
+	},
+	
+	
+	recentSearches:{
+		flexDirection: 'column',
+		paddingTop: 10,
+		paddingBottom:15,
+		paddingLeft: 5,
+		paddingRight: 5,
+		flex:1,
+		
+	},
+	recentSearchesList:{
+		borderColor: '#000',
+		borderWidth: 1,
+		flex:1,
+		
+	},
+	rowRecentSearch:{
+		flexDirection: 'row',
+		padding: 10,
 	},
 	
 });
