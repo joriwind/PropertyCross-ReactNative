@@ -300,7 +300,6 @@ var PropertySearchPage = React.createClass({
 	},
 	
 	_renderResultUI: function(){
-		console.log("PropertySearchPage state: " + this.props.state);
 		
 		switch(this.state.state){
 			case 'Initial':
@@ -349,7 +348,7 @@ var PropertySearchPage = React.createClass({
 	
 	_renderRowRecentSearch: function(rowData){
 		return (
-      <TouchableHighlight onPress={() => this._onClickRecentSearch(rowData.resultsInfo.title)}
+      <TouchableHighlight onPress={() => this._onClickList(rowData.resultsInfo.location)}
 					underlayColor='#dddddd'>
 				<View>
 					<View style={styles.rowRecentSearch}>
@@ -366,7 +365,7 @@ var PropertySearchPage = React.createClass({
 	
 	_renderRowLocations: function(rowData){
 		return (
-      <TouchableHighlight onPress={() => this._onClickLocations(rowData)}
+      <TouchableHighlight onPress={() => this._onClickList(rowData)}
 					underlayColor='#dddddd'>
 				<View>
 					<View style={styles.rowRecentSearch}>
@@ -380,24 +379,15 @@ var PropertySearchPage = React.createClass({
 		
 	},
 	
-	_onClickLocations: function(location){
+	_onClickList: function(location){
 		if(location.place_name !== undefined){
 			this.setState({state: 'Loading'});
-			console.log("Searching for selected location: " + location.long_title);
+			console.log("Searching for properties near: " + location.long_title);
 			var query = urlForQueryAndPage('place_name', location.place_name, 1);
 			this._executeQuery(query);
 		}
 	},
 	
-	_onClickRecentSearch: function(place_name){
-		//var value = this.state.recentSearches.filter(prop => prop.resultsInfo.title === title)[0];
-		this.setState({ state: 'Loading' });
-		console.log("Searching again for: " + place_name);
-		var query = urlForQueryAndPage('place_name', place_name, 1);
-    this._executeQuery(query);
-		
-			
-	},
 	
 	
 });
