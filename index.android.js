@@ -52,7 +52,7 @@ var PropertyCrossReactNative = React.createClass({
 			case 'PropertySearch':
 				console.log('PropertySearch');
 				return (
-					<PropertySearchPage navigator={nav}/>
+					<PropertySearchPage navigator={nav} state={route.state} locations={route.locations}/>
 					
 				);
 				

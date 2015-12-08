@@ -37,9 +37,11 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
 
 var PropertySearchPage = React.createClass({
 	componentDidMount() {
-		if(this.state.state = 'Initial'){
+		if(this.state.state == 'Initial'){
 			console.log("Retrieving db!");
 			this._loadInitialStateRecentSearches().done();
+		}else if(this.state.state == 'ListedLocations'){
+			this.setState({locations: this.state.locations.cloneWithRows(this.props.locations),});
 		}
   },
 	
@@ -127,10 +129,12 @@ var PropertySearchPage = React.createClass({
 		STORAGE_KEY_RECENT = '@RecentSearches:key';
 		// this._removeStorageRecentSearches();
 		var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
+		var dsLocations = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
 		return {
 			state: 'Initial',
 		  searchString: '',
 			recentSearches: ds.cloneWithRows([{resultsInfo: {title: 'No recent searches', total_results:0}}]),
+			locations: dsLocations.cloneWithRows([{long_title: "No locations found"}]),
 		};
 	},
 	
@@ -148,6 +152,7 @@ var PropertySearchPage = React.createClass({
       .then(response => response.json())
       .then(json => this._handleResponse(json.response))
       .catch(error => {
+				console.log("PropertySearchPage: Error in executeQuery: " + error);
         this.setState({
           state: 'Error'
         });
@@ -155,36 +160,76 @@ var PropertySearchPage = React.createClass({
 	},
 	
 	_handleResponse(response) {
-		console.log("Response!" + response.listings);//JSON.stringify(response.listings)
-		
-		var resultsInfo = {
-			title: response.locations[0].title,
-			lengthSearchResults: response.listings.length, 
-			total_results: response.total_results,
-			pageSearchResults: response.page,
-			total_pages: response.total_pages
-			};
-		
-		console.log("Title of location: " + resultsInfo.title);
-		console.log("Total results: " + resultsInfo.total_results);
-		console.log("Given results: " + resultsInfo.lengthSearchResults);
+		console.log("PropertySearchPage: Response code of nestoria request: " + response.application_response_code);
+		var nextState = 'Error';
+		//Check apllication response code:
+		if(response.application_response_code <200){
+			//Request was valid
+			console.log("PropertySearchPage: Request from nestoria is valid");
+			nextState = 'Initial';
+		}else if(response.application_response_code < 300){
+			//Listings not returned, bad location
+			if(response.application_response_code == 200){
+				console.log("PropertySearchPage: Request from nestoria has suggested locations");
+				nextState = 'ListedLocations'
 				
-		//Add search to asyncstorage.
-		var storageValue = {resultsInfo: resultsInfo};
-		this._addValueRecentSearches(storageValue);
-		
-    if (response.application_response_code.substr(0, 1) === '1') {
-      this.props.navigator.push({
-        id: 'SearchResults',
-        searchResults:  response.listings,
-				resultsInfo: resultsInfo,
-      });
-			if(this.state.state = 'Loading'){
-				this.state.state = 'Initial';
+			}else if(response.application_response_code == 202){
+				console.log("PropertySearchPage: Request from nestoria has suggested locations");
+				nextState = 'ListedLocations'
+				
+			}else{
+				console.log("PropertySearchPage: The request to nestoria was not valid(Bad location): " + response.application_response_code);
+				this.setState({state: 'Error'});
+				return;
 			}
-    } else {
-      this.setState({state: 'Error'});
-    }
+		}else{
+			console.log("PropertySearchPage: The request to nestoria was not valid: " + response.application_response_code);
+			this.setState({state: 'Error'});
+			return;
+		}
+		
+		if(nextState == 'Initial'){
+			//Response was valid with a good location!
+			if(response.listings.length == 0){
+				console.log("PropertySearchPage: listings is empty!");
+				this.setState({state: 'Error'});
+				return;
+			}
+			
+			var resultsInfo = {
+				title: response.locations[0].title,
+				lengthSearchResults: response.listings.length, 
+				total_results: response.total_results,
+				pageSearchResults: response.page,
+				total_pages: response.total_pages
+				};
+					
+			//Add search to asyncstorage.
+			var storageValue = {resultsInfo: resultsInfo};
+			this._addValueRecentSearches(storageValue);
+			
+			if (response.application_response_code.substr(0, 1) === '1') {
+				this.props.navigator.push({
+					id: 'SearchResults',
+					searchResults:  response.listings,
+					resultsInfo: resultsInfo,
+				});
+				if(this.state.state = 'Loading'){
+					this.state.state = 'Initial';
+				}
+			} else {
+				this.setState({state: 'Error'});
+			}
+		}else{
+			//Bad location but with possibilities
+			var locations = response.locations;
+			this.props.navigator.push({
+				id:'PropertySearch',
+				state: nextState,	//ListedLocations
+				locations: locations,
+			})
+			
+		}
   },
 	
 	_onClickMyLocation: function(){
@@ -260,9 +305,18 @@ var PropertySearchPage = React.createClass({
 						
 					</View>
 				);
-			case 'Listed location':
+			case 'ListedLocations':
 				return(
-					<View>
+					<View style={styles.recentSearches}>
+						<Text>Please select a location below:</Text>
+						<View style={styles.recentSearchesList}>
+						<ListView
+							style= {styles.recentSearchesList}
+							dataSource={this.state.locations}
+							renderRow={this._renderRowLocations}
+						/>
+						</View>
+						
 					</View>
 				);
 			case 'Loading':
@@ -296,6 +350,31 @@ var PropertySearchPage = React.createClass({
 			</TouchableHighlight>
     );
 		
+	},
+	
+	_renderRowLocations: function(rowData){
+		return (
+      <TouchableHighlight onPress={() => this._onClickLocations(rowData)}
+					underlayColor='#dddddd'>
+				<View>
+					<View style={styles.rowRecentSearch}>
+						<Text>{rowData.long_title}</Text>
+						
+					</View>
+					<View style={styles.separator}/>
+				</View>
+			</TouchableHighlight>
+    );
+		
+	},
+	
+	_onClickLocations: function(location){
+		if(location.place_name !== undefined){
+			this.setState({state: 'Loading'});
+			console.log("Searching for selected location: " + location.long_title);
+			var query = urlForQueryAndPage('place_name', location.title, 1);
+			this._executeQuery(query);
+		}
 	},
 	
 	_onClickRecentSearch: function(title){
