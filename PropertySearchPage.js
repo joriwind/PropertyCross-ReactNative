@@ -40,8 +40,6 @@ var PropertySearchPage = React.createClass({
 		if(this.state.state == 'Initial'){
 			console.log("Retrieving db!");
 			this._loadInitialStateRecentSearches().done();
-		}else if(this.state.state == 'ListedLocations'){
-			this.setState({locations: this.state.locations.cloneWithRows(this.props.locations),});
 		}
   },
 	
@@ -52,11 +50,10 @@ var PropertySearchPage = React.createClass({
       if (value !== null){
 				//console.log("STRING:::::: " + value);
 				var jsonObject = JSON.parse(value);
-				console.log("JSON:::::::: " + jsonObject);
-				console.log("First object retrieved from DB: " + jsonObject[0].resultsInfo.title);
+				console.log("PropertySearch: objects retrieved from DB: " + jsonObject);
         this.setState({recentSearches: this.state.recentSearches.cloneWithRows(jsonObject)});
       } else {
-        this.setState({recentSearches: this.state.recentSearches.cloneWithRows([{resultsInfo: {title: 'No recent searches', total_results:0}}])});
+        this.setState({recentSearches: this.state.recentSearches.cloneWithRows([{resultsInfo: {location:{long_title: 'No recent searches'}, total_results:0}}])});
       }
     } catch (error) {
 			console.log("AsyncStorage GET error: " + error);
@@ -71,7 +68,7 @@ var PropertySearchPage = React.createClass({
 						
 			if(storedValue !== null){
 				var jsonArray = JSON.parse(storedValue);
-				var filterObject = jsonArray.filter(prop => prop.resultsInfo.title === value.resultsInfo.title)[0];
+				var filterObject = jsonArray.filter(prop => prop.resultsInfo.location.place_name === value.resultsInfo.location.place_name)[0];
 				console.log("Filtered object: " + filterObject);
 				
 				if(filterObject === undefined){
@@ -81,7 +78,7 @@ var PropertySearchPage = React.createClass({
 					
 				}else{
 					jsonArray.forEach(function(result, index) {
-						if(result.resultsInfo.title === filterObject.resultsInfo.title) {
+						if(result.resultsInfo.location.place_name === filterObject.resultsInfo.location.place_name) {
 							//Set to above new element
 							jsonArray.splice(index, 1);
 						}    
@@ -93,6 +90,7 @@ var PropertySearchPage = React.createClass({
 			}else{
 				await AsyncStorage.setItem(STORAGE_KEY_RECENT, JSON.stringify([value]));
 			}
+			this._loadInitialStateRecentSearches().done();
     } catch (error) {
       console.log('AsyncStorage ADD error: ' + error.message);
     }
@@ -127,13 +125,13 @@ var PropertySearchPage = React.createClass({
 	
 	getInitialState: function() {
 		STORAGE_KEY_RECENT = '@RecentSearches:key';
-		// this._removeStorageRecentSearches();
+		//this._removeStorageRecentSearches();
 		var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
 		var dsLocations = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
 		return {
 			state: 'Initial',
 		  searchString: '',
-			recentSearches: ds.cloneWithRows([{resultsInfo: {title: 'No recent searches', total_results:0}}]),
+			recentSearches: ds.cloneWithRows([{resultsInfo: {location:{long_title: 'No recent searches'}, total_results:0}}]),
 			locations: dsLocations.cloneWithRows([{long_title: "No locations found"}]),
 		};
 	},
@@ -179,11 +177,13 @@ var PropertySearchPage = React.createClass({
 				
 			}else{
 				console.log("PropertySearchPage: The request to nestoria was not valid(Bad location): " + response.application_response_code);
+				nextState = 'Error';
 				this.setState({state: 'Error'});
 				return;
 			}
 		}else{
 			console.log("PropertySearchPage: The request to nestoria was not valid: " + response.application_response_code);
+			nextState = 'Error';
 			this.setState({state: 'Error'});
 			return;
 		}
@@ -192,48 +192,62 @@ var PropertySearchPage = React.createClass({
 			//Response was valid with a good location!
 			if(response.listings.length == 0){
 				console.log("PropertySearchPage: listings is empty!");
+				nextState = 'Error';
 				this.setState({state: 'Error'});
-				return;
-			}
-			
-			var resultsInfo = {
-				title: response.locations[0].title,
-				lengthSearchResults: response.listings.length, 
-				total_results: response.total_results,
-				pageSearchResults: response.page,
-				total_pages: response.total_pages
-				};
-					
-			//Add search to asyncstorage.
-			var storageValue = {resultsInfo: resultsInfo};
-			this._addValueRecentSearches(storageValue);
-			
-			if (response.application_response_code.substr(0, 1) === '1') {
-				this.props.navigator.push({
-					id: 'SearchResults',
-					searchResults:  response.listings,
-					resultsInfo: resultsInfo,
-				});
-				if(this.state.state = 'Loading'){
-					this.state.state = 'Initial';
+				
+			}else{
+				
+				var resultsInfo = {
+					location: response.locations[0], 
+					lengthSearchResults: response.listings.length, 
+					total_results: response.total_results,
+					pageSearchResults: response.page,
+					total_pages: response.total_pages
+					};
+						
+				//Add search to asyncstorage.
+				var storageValue = {resultsInfo: resultsInfo};
+				this._addValueRecentSearches(storageValue);
+				
+				if (response.application_response_code.substr(0, 1) === '1') {
+					this.props.navigator.push({
+						id: 'SearchResults',
+						searchResults:  response.listings,
+						resultsInfo: resultsInfo,
+					});
+					if(this.state.state = 'Loading'){
+						this.state.state = 'Initial';
+					}
+				} else {
+					this.setState({state: 'Error'});
 				}
-			} else {
-				this.setState({state: 'Error'});
 			}
 		}else{
 			//Bad location but with possibilities
 			var locations = response.locations;
-			this.props.navigator.push({
-				id:'PropertySearch',
+			this.setState({
 				state: nextState,	//ListedLocations
-				locations: locations,
-			})
+				locations: this.state.locations.cloneWithRows(locations),
+			});
 			
 		}
   },
 	
 	_onClickMyLocation: function(){
-		
+		console.log("Searching for position!");
+		navigator.geolocation.getCurrentPosition(
+      (position) => {
+				console.log("Searching...");
+        this.setState({state: 'Loading'});
+				console.log("Searching with geolocation: " + JSON.stringify(position));
+				//centre_point=51.684183,-3.431481
+				var query = urlForQueryAndPage('centre_point', position.coords.longitude + ',' + position.coords.latitude, 1);
+				this._executeQuery(query);
+        
+      },
+      (error) => console.log(error.message),
+      {enableHighAccuracy: true, timeout: 5000, maximumAge: 1000}
+    );
 	},
 	
 	_navigateToFaves: function(){
@@ -286,10 +300,8 @@ var PropertySearchPage = React.createClass({
 	},
 	
 	_renderResultUI: function(){
-		if(this.props.state){
-			this.state.state = this.props.state;
-			console.log("PropertySearchPage changed state: " + this.props.state);
-		}
+		console.log("PropertySearchPage state: " + this.props.state);
+		
 		switch(this.state.state){
 			case 'Initial':
 				return(
@@ -341,7 +353,7 @@ var PropertySearchPage = React.createClass({
 					underlayColor='#dddddd'>
 				<View>
 					<View style={styles.rowRecentSearch}>
-						<Text>{rowData.resultsInfo.title} </Text>
+						<Text>{rowData.resultsInfo.location.long_title} </Text>
 						<Text>({rowData.resultsInfo.total_results})</Text>
 						
 					</View>
@@ -372,16 +384,16 @@ var PropertySearchPage = React.createClass({
 		if(location.place_name !== undefined){
 			this.setState({state: 'Loading'});
 			console.log("Searching for selected location: " + location.long_title);
-			var query = urlForQueryAndPage('place_name', location.title, 1);
+			var query = urlForQueryAndPage('place_name', location.place_name, 1);
 			this._executeQuery(query);
 		}
 	},
 	
-	_onClickRecentSearch: function(title){
+	_onClickRecentSearch: function(place_name){
 		//var value = this.state.recentSearches.filter(prop => prop.resultsInfo.title === title)[0];
 		this.setState({ state: 'Loading' });
-		console.log("Searching again for: " + title);
-		var query = urlForQueryAndPage('place_name', title, 1);
+		console.log("Searching again for: " + place_name);
+		var query = urlForQueryAndPage('place_name', place_name, 1);
     this._executeQuery(query);
 		
 			
