@@ -351,7 +351,7 @@ var PropertySearchPage = React.createClass({
 			default: //Error state
 				return(
 					<View style = {styles.ResultUI}>
-						<Text style = {styles.errorMessage}>{this.state.errorMessage}</Text>
+						<Text style = {styles.text}>{this.state.errorMessage}</Text>
 						
 					</View>
 				);
@@ -431,7 +431,8 @@ var styles = StyleSheet.create({
 	},
 	
   SearchUI: {
-    
+    paddingLeft: 5,
+		paddingRight: 5,
 		paddingTop: 5,
     flexDirection: 'column',
     //justifyContent: 'left',
@@ -474,7 +475,7 @@ var styles = StyleSheet.create({
 	},
 	
 	
-	errorMessage:{
+	text:{
 		fontSize: 15,
 		flex: 1,
 	},
