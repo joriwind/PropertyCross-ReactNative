@@ -26,6 +26,13 @@ var _navigator;
 
 var STORAGE_KEY_RECENT : '@RecentSearches:key';
 
+var MESSAGE_ZERO_ERROR = "There were no properties found for the given location.";
+var MESSAGE_LOCATION_MATCH_ERROR = "The location given was not recognised.";
+var MESSAGE_NETWORK_CONNECTION_ERROR = "An error occurred while searching. Please check your network connection and try again.";
+var MESSAGE_LOCATION_ENABLE_ERROR = "The use of location is currently disabled.";
+var MESSAGE_LOCATION_NF_ERROR = "Unable to detect current location. Please ensure location is turned on in your phone settings and try again.";
+
+
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator && _navigator.getCurrentRoutes().length > 1) {
     _navigator.pop();
@@ -57,7 +64,7 @@ var PropertySearchPage = React.createClass({
       }
     } catch (error) {
 			console.log("AsyncStorage GET error: " + error);
-      this.setState({state: 'Error'});
+      this.setState({state: 'Error', errorMessage: "Serious error!"});
     }
   },
 	
@@ -152,7 +159,8 @@ var PropertySearchPage = React.createClass({
       .catch(error => {
 				console.log("PropertySearchPage: Error in executeQuery: " + error);
         this.setState({
-          state: 'Error'
+          state: 'Error',
+					errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
         });
       });
 	},
@@ -178,13 +186,13 @@ var PropertySearchPage = React.createClass({
 			}else{
 				console.log("PropertySearchPage: The request to nestoria was not valid(Bad location): " + response.application_response_code);
 				nextState = 'Error';
-				this.setState({state: 'Error'});
+				this.setState({state: 'Error', errorMessage: MESSAGE_LOCATION_MATCH_ERROR,});
 				return;
 			}
 		}else{
 			console.log("PropertySearchPage: The request to nestoria was not valid: " + response.application_response_code);
 			nextState = 'Error';
-			this.setState({state: 'Error'});
+			this.setState({state: 'Error', errorMessage: MESSAGE_LOCATION_MATCH_ERROR});
 			return;
 		}
 		
@@ -193,7 +201,7 @@ var PropertySearchPage = React.createClass({
 			if(response.listings.length == 0){
 				console.log("PropertySearchPage: listings is empty!");
 				nextState = 'Error';
-				this.setState({state: 'Error'});
+				this.setState({state: 'Error', errorMessage: MESSAGE_ZERO_ERROR});
 				
 			}else{
 				
@@ -219,7 +227,7 @@ var PropertySearchPage = React.createClass({
 						this.state.state = 'Initial';
 					}
 				} else {
-					this.setState({state: 'Error'});
+					this.setState({state: 'Error', errorMessage: 'Serious error!'});
 				}
 			}
 		}else{
@@ -245,7 +253,11 @@ var PropertySearchPage = React.createClass({
 				this._executeQuery(query);
         
       },
-      (error) => console.log(error.message),
+      (error) => {
+			console.log("PropertySearchPage: error in geolocation:" + JSON.stringify(error));
+			this.setState({state:'Error', errorMessage: MESSAGE_LOCATION_NF_ERROR});
+						
+			},
       {enableHighAccuracy: true, timeout: 5000, maximumAge: 1000}
     );
 	},
@@ -339,7 +351,7 @@ var PropertySearchPage = React.createClass({
 			default: //Error state
 				return(
 					<View style = {styles.ResultUI}>
-						<Text style = {styles.text}>There was a problem with your search</Text>
+						<Text style = {styles.errorMessage}>{this.state.errorMessage}</Text>
 						
 					</View>
 				);
@@ -445,7 +457,9 @@ var styles = StyleSheet.create({
 	},
 	
 	ResultUI: {
-		paddingTop: 5,
+		paddingTop: 10,
+		paddingLeft: 5,
+		paddingRight: 5,
 		flex: 1,
 		flexDirection: 'column',
 
@@ -460,8 +474,9 @@ var styles = StyleSheet.create({
 	},
 	
 	
-	text:{
+	errorMessage:{
 		fontSize: 15,
+		flex: 1,
 	},
 	
 	toolbar: {
