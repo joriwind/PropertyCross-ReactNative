@@ -8,19 +8,33 @@ var {
 	BackAndroid,
   Text,
   View,
+	AsyncStorage,
 } = React;
+
+var STORAGE_KEY_FAVS = '@Favs:key';
+var _navigator;
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator && _navigator.getCurrentRoutes().length > 1) {
-    _navigator.popToRoute({id: 'SearchResults'});
+    _navigator.pop();
     return true;
   }
   return false;
 });
 
-var _navigator;
-
 var PropertyListingPage = React.createClass({
+	
+	componentDidMount() {
+		this._setIsFav(this.props.property);
+  },
+	
+	getInitialState: function() {
+		// this._removeStorageFavs();
+		return {
+			isFavourite: false,
+		};
+	},
+	
 	render: function(){
 		console.log('Navigated to PropertyListingPage');
 		_navigator = this.props.navigator;
@@ -56,10 +70,84 @@ var PropertyListingPage = React.createClass({
 			<View style={styles.toolbar}>
 				<Text style={styles.toolbarButton}>{''}</Text>
 				<Text style={styles.toolbarTitle}>{'Property Details'}</Text>
-				<Text style={styles.toolbarButton}>{'+'}</Text>
+				<TouchableOpacity onPress = {this._onClickAddFav}>
+					<Text style={styles.toolbarButton}>{this._getFavButton()}</Text>
+				</TouchableOpacity>
 			</View>
 		);
 	},
+	
+	_getFavButton(){
+		if(this.state.isFavourite){
+			return '-';
+		}else{
+			return '+';
+		}
+		
+	},
+	
+	_onClickAddFav(){
+		this._toggleFav(this.props.property);
+	},
+		
+	async _toggleFav(value) {
+    
+    try {			
+			var storedValue = await AsyncStorage.getItem(STORAGE_KEY_FAVS);
+			
+			if(storedValue !== null){
+				var jsonArray = JSON.parse(storedValue);
+				var filterObject = jsonArray.filter(prop => prop.guid === value.guid)[0];
+				
+				if(filterObject === undefined){
+					var array = ([value]).concat(jsonArray);
+					await AsyncStorage.setItem(STORAGE_KEY_FAVS, JSON.stringify(array));
+					console.log('Added search to favs: ' + JSON.stringify(value));
+					
+				}else{
+					jsonArray.forEach(function(result, index) {
+						if(result.guid === filterObject.guid) {
+							//Set to above new element
+							jsonArray.splice(index, 1);
+						}    
+					});
+					await AsyncStorage.setItem(STORAGE_KEY_FAVS, JSON.stringify(jsonArray));
+					console.log('Deleted Favs to: ' + JSON.stringify(value));
+				}
+			}else{
+				await AsyncStorage.setItem(STORAGE_KEY_FAVS, JSON.stringify([value]));
+			}
+			this.setState({isFavourite: !this.state.isFavourite});
+			
+    } catch (error) {
+      console.log('PropertyListingPage: AsyncStorage ADD error: ' + error.message);
+    }
+  },
+	
+	async _setIsFav(property) {
+    try {
+			console.log("Get Items from db, key: " + STORAGE_KEY_FAVS);
+      var value = await AsyncStorage.getItem(STORAGE_KEY_FAVS);
+      if (value !== null){
+				var jsonArray = JSON.parse(value);
+				var filterObject = jsonArray.filter(prop => prop.guid === property.guid)[0];
+				if(filterObject !== undefined){
+					console.log("Is a fav!");
+					this.setState({isFavourite: true});
+					return;
+				}
+					console.log("Is not a fav!");
+					this.setState({isFavourite: false});
+					return;
+      } else {
+					console.log("Is not a fav!");
+					this.setState({isFavourite: false});
+					return;
+      }
+    } catch (error) {
+			console.log("PropertyListingPage: AsyncStorage GET error: " + error);
+    }
+  },
 	
 	
 });
