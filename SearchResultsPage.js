@@ -25,19 +25,21 @@ var _toolbarTitle;
 
 var SearchResultsPage = React.createClass({
 	
+	componentDidMount() {
+		this._loadSearchResults(this.props.searchResults).done();
+  },
+	
 	getInitialState: function() {
 		var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
 		
-		if(this.props.searchResults){
-			return {
-				dataSource: ds.cloneWithRows(this.props.searchResults),
-			};
-		}else{
-			return {
-				dataSource: ds.cloneWithRows(['An error occured']),
-			};
-		}
+		return {
+			dataSource: ds.cloneWithRows([]),
+		};
 		
+	},
+	
+	async _loadSearchResults(searchResults){
+		this.setState({dataSource: this.state.dataSource.cloneWithRows(searchResults),});
 	},
 	
 	render: function(){

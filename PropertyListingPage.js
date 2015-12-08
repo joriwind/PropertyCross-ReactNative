@@ -25,11 +25,10 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
 var PropertyListingPage = React.createClass({
 	
 	componentDidMount() {
-		this._setIsFav(this.props.property);
+		this._setIsFav(this.props.property).done();
   },
 	
 	getInitialState: function() {
-		// this._removeStorageFavs();
 		return {
 			isFavourite: false,
 		};
