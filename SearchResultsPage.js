@@ -26,7 +26,7 @@ var _toolbarTitle;
 var SearchResultsPage = React.createClass({
 	
 	componentDidMount() {
-		this._loadSearchResults(this.props.searchResults).done();
+		this._loadSearchResults(this.props.searchResults);
   },
 	
 	getInitialState: function() {
