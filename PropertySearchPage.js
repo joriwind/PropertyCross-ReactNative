@@ -411,7 +411,7 @@ var PropertySearchPage = React.createClass({
 			// var query = urlForQueryAndPage('place_name', location.place_name, 1);
 			// this._executeQuery(query);
 			try{
-			NestoriaAPI.getProperties('place_name', this.state.searchString, 1)
+			NestoriaAPI.getProperties('place_name', location.place_name, 1)
 				.done(res => this._handleResponse(res));
 			}catch(error){
 				console.log("PropertySearchPage: Error in executeQuery: " + error);
