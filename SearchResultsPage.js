@@ -8,17 +8,8 @@ var {
   Text,
   View,
 	ListView,
-	BackAndroid,
 } = React;
 
-
-BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
-    _navigator.pop();
-    return true;
-  }
-  return false;
-});
 
 var _navigator;
 var _toolbarTitle;

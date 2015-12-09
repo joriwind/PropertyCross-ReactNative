@@ -6,7 +6,6 @@ var {
   StyleSheet,
   TouchableOpacity,
 	TouchableHighlight,
-	BackAndroid,
   Text,
   View,
 	AsyncStorage,
@@ -17,13 +16,6 @@ var {
 var _navigator;
 var STORAGE_KEY_FAVS = '@Favs:key';
 
-BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
-    _navigator.pop();
-    return true;
-  }
-  return false;
-});
 
 var FavouritesPage = React.createClass({
 	

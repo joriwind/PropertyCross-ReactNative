@@ -14,6 +14,7 @@ var {
   Text,
   View,
   TouchableOpacity,
+	BackAndroid,
 
 } = React;
 
@@ -23,6 +24,15 @@ var PropertyListingPage = require('./PropertyListingPage');
 var FavouritesPage = require('./FavouritesPage');
 
 var _navigator;
+
+BackAndroid.addEventListener('hardwareBackPress', () => {
+	console.log("Current routes(Home): " + _navigator.getCurrentRoutes());
+  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
+    _navigator.pop();
+    return true;
+  }
+  return false;
+});
 
 
 var PropertyCrossReactNative = React.createClass({
@@ -34,18 +44,13 @@ var PropertyCrossReactNative = React.createClass({
 				style={styles.container}
 				initialRoute={initialRoute}
 				renderScene={this.routeMapper}
-				configureScene={(route) => {
-          if (route.sceneConfig) {
-            return route.sceneConfig;
-          }
-          return Navigator.SceneConfigs.FloatFromBottom;
-        }}
+				
 			/>
     );
   },
 	
 	routeMapper: function(route, nav){
-	
+		_navigator = nav;
 		console.log('rendering..... what?: ' + route.id);
 		
 		switch(route.id){

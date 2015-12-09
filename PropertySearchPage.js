@@ -9,7 +9,6 @@ var {
   StyleSheet,
   TouchableOpacity,
 	Navigator,
-	BackAndroid,
   Text,
 	TextInput,
   View,
@@ -31,15 +30,6 @@ var MESSAGE_LOCATION_MATCH_ERROR = "The location given was not recognised.";
 var MESSAGE_NETWORK_CONNECTION_ERROR = "An error occurred while searching. Please check your network connection and try again.";
 var MESSAGE_LOCATION_ENABLE_ERROR = "The use of location is currently disabled.";
 var MESSAGE_LOCATION_NF_ERROR = "Unable to detect current location. Please ensure location is turned on in your phone settings and try again.";
-
-
-BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
-    _navigator.pop();
-    return true;
-  }
-  return false;
-});
 
 
 var PropertySearchPage = React.createClass({
@@ -273,9 +263,7 @@ var PropertySearchPage = React.createClass({
 				<Text style={styles.toolbarButton}>{''}</Text>
 				<Text style={styles.toolbarTitle}>{_toolbarTitle}</Text>
 				<TouchableOpacity onPress = {this._navigateToFaves}>
-					<View style = {styles.toolbarBox}>
 					<Text style={styles.toolbarButton}>{'Faves'}</Text>
-					</View>
 				</TouchableOpacity>
 			</View>
 		);
@@ -291,8 +279,9 @@ var PropertySearchPage = React.createClass({
 					<Text> click 'My location', to search in your current location</Text>
 				</Text>
 				<TextInput 
-					style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+					style={styles.textInput}
 					onChangeText={(searchString) => this.setState({searchString})}
+					onSubmitEditing={this._onClickGo}
 					value={this.state.searchString}
 				/>
 				<View style = {{ flexDirection: 'row'}}>
@@ -441,22 +430,28 @@ var styles = StyleSheet.create({
     //backgroundColor: '#F0FCFF',
   },
 	button: {
-    backgroundColor: '#707070',
-    //borderColor: '#717171',
-    //borderWidth: 5,
-		//borderRadius:5,
-		paddingLeft: 5,
-		paddingRight: 5,
-		paddingTop: 1,
-		paddingBottom: 1,
+    borderColor: '#111',
+		borderWidth: 3,
+		
+		padding:10,
 		marginLeft:5,
 		marginRight:5,
   },
 	
 	buttonText: {
-		fontSize:17,
+		//fontSize:20,
+		//backgroundColor: 'transparent',
+		color: '#111',
 		
 	},
+	
+	textInput: {
+		height: 40,
+		fontSize: 16, 
+		borderColor: 'gray', 
+		borderWidth: 1
+	},
+	
 	
 	ResultUI: {
 		paddingTop: 10,
@@ -481,30 +476,26 @@ var styles = StyleSheet.create({
 		flex: 1,
 	},
 	
-	toolbar: {
-    backgroundColor: '#81c04d',
-		paddingTop:10,
-		paddingBottom:10,
-		paddingRight:5,
-		flexDirection: 'row'
-  },
-	toolbarBox: {
-    backgroundColor: '#707070',
-    borderColor: '#717171',
-    borderWidth: 1,
-  },
+	toolbar:{
+			backgroundColor:'#81c04d',
+			paddingTop:8,
+			paddingBottom:8,
+			paddingLeft: 5,
+			paddingRight: 5,
+			flexDirection:'row'    //Step 1
+	},
 	toolbarButton:{
-		fontSize:20,
-		width: 70,
-		color: '#fff',
-		textAlign: 'center',		
+			width: 60,            //Step 2
+			fontSize: 20,
+			color:'#fff',
+			textAlign:'center'
 	},
 	toolbarTitle:{
-		fontSize:20,
-		color: '#fff',
-		textAlign: 'center',
-		fontWeight: 'bold',
-		flex: 1
+			color:'#fff',
+			fontSize: 20,
+			textAlign:'center',
+			fontWeight:'bold',
+			flex:1                //Step 3
 	},
 	
 	
