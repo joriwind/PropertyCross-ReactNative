@@ -8,6 +8,7 @@ var {
   Text,
   View,
 	AsyncStorage,
+	ScrollView,
 } = React;
 
 var STORAGE_KEY_FAVS = '@Favs:key';
@@ -41,7 +42,12 @@ var PropertyListingPage = React.createClass({
     return (
 			<View style={{flex:1}}>
 				{this._renderToolbar()}
-				<View style={styles.container}>
+				
+				<ScrollView
+					automaticallyAdjustContentInsets={false}
+					scrollEventThrottle={200}
+					style={styles.container}>
+					
 					<Image style={styles.image} 
 							source={{uri: property.img_url}} />
 					<View style={styles.heading}>
@@ -51,7 +57,7 @@ var PropertyListingPage = React.createClass({
 					</View>
 					<Text style={styles.description}>{stats}</Text>
 					<Text style={styles.description}>{property.summary}</Text>
-				</View>
+				</ScrollView>
 			</View>
     );
 	},

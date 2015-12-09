@@ -8,11 +8,15 @@ var {
   Text,
   View,
 	ListView,
+	ScrollView,
 } = React;
 
 
 var _navigator;
 var _toolbarTitle;
+
+var MESSAGE_LOADMORE = 'Load more ...';
+var MESSAGE_LOADING = 'Loading ...';
 
 var SearchResultsPage = React.createClass({
 	
@@ -25,6 +29,7 @@ var SearchResultsPage = React.createClass({
 		
 		return {
 			dataSource: ds.cloneWithRows([]),
+			messageEOL: MESSAGE_LOADMORE,
 		};
 		
 	},
@@ -55,10 +60,20 @@ var SearchResultsPage = React.createClass({
 	
 	_renderList: function(){
 		return(
+		<ScrollView
+        automaticallyAdjustContentInsets={false}
+        scrollEventThrottle={200}>
 			<ListView
 				dataSource={this.state.dataSource}
 				renderRow={this._renderRow}
 			/>
+			<TouchableHighlight onPress={this._onClickLoadMore}
+					underlayColor='#dddddd'>
+				<View style={styles.rowContainerMessageEOL}>
+					<Text style={styles.messageEOL}>{this.state.messageEOL}</Text>
+				</View>
+			</TouchableHighlight>
+		</ScrollView>
 				);
 	},
 	
@@ -103,6 +118,12 @@ var SearchResultsPage = React.createClass({
 				
 	},
 	
+	_onClickLoadMore(){
+		this.setState({messageEOL: MESSAGE_LOADING});
+		
+		
+	},
+	
 	
 });
 
@@ -140,6 +161,20 @@ var styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10
   },
+	
+	rowContainerMessageEOL:{
+		
+    alignItems: 'center',
+    padding: 10,
+		
+	},
+	
+	messageEOL: {
+		fontSize: 20,
+		
+    color: '#656565',
+		textAlign: 'center',
+	},
 	
 	toolbar: {
     backgroundColor: '#81c04d',

@@ -10,6 +10,7 @@ var {
   View,
 	AsyncStorage,
 	ListView,
+	ScrollView,
 } = React;
 
 
@@ -107,15 +108,19 @@ var FavouritesPage = React.createClass({
 			);
 		}else{
 			return(
-				<View>
+				<View style={{flex:1}}>
 					{this._renderToolbar()}
-					<View style={styles.FavView}>
+					<ScrollView
+					automaticallyAdjustContentInsets={false}
+					scrollEventThrottle={200}
+					
+					>
+					
 						<ListView
-							style= {styles.FavList}
 							dataSource={this.state.favs}
 							renderRow={this._renderRowFavList}
 						/>
-					</View>
+					</ScrollView>
 				</View>
 			);
 		}
@@ -158,7 +163,6 @@ var FavouritesPage = React.createClass({
 
 var styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -166,7 +170,6 @@ var styles = StyleSheet.create({
   },
 	
 	FavView: {
-		flex:1,
 		flexDirection: 'column',
 		paddingTop: 5,
 		paddingLeft: 5,
@@ -175,7 +178,6 @@ var styles = StyleSheet.create({
 	
 	text: {
 		fontSize: 19,
-		flex: 1,
 	},
 	
 	FavListRow: {

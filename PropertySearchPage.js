@@ -2,6 +2,7 @@
 
 var React = require('react-native');
 var GiftedSpinner = require('react-native-gifted-spinner');
+var greetings = require('./greetings.js');
 
 
 var {
