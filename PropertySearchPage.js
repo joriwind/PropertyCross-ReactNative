@@ -124,7 +124,7 @@ var PropertySearchPage = React.createClass({
 	
 	getInitialState: function() {
 		STORAGE_KEY_RECENT = '@RecentSearches:key';
-		this._removeStorageRecentSearches();
+		//this._removeStorageRecentSearches();
 		var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
 		var dsLocations = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
 		return {
@@ -272,7 +272,7 @@ var PropertySearchPage = React.createClass({
 			this.setState({state:'Error', errorMessage: MESSAGE_LOCATION_NF_ERROR});
 						
 			},
-      {enableHighAccuracy: true, timeout: 5000, maximumAge: 1000}
+      { timeout: 5000}
     );
 	},
 	
