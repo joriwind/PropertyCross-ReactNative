@@ -3,6 +3,7 @@
 var React = require('react-native');
 var GiftedSpinner = require('react-native-gifted-spinner');
 var greetings = require('./greetings.js');
+var NestoriaAPI = require('./nestoriaAPI.js');
 
 
 var {
@@ -137,11 +138,21 @@ var PropertySearchPage = React.createClass({
 	_onClickGo: function(){
 		this.setState({ state: 'Loading' });
 		console.log("Searching for: " + this.state.searchString);
-		var query = urlForQueryAndPage('place_name', this.state.searchString, 1);
-    this._executeQuery(query);
+		try{
+		NestoriaAPI.getProperties('place_name', this.state.searchString, 1)
+			.done(res => this._handleResponse(res));
+		}catch(error){
+			console.log("PropertySearchPage: Error in executeQuery: " + error);
+			this.setState({
+				state: 'Error',
+				errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
+			});
+		}
+		// var query = urlForQueryAndPage('place_name', this.state.searchString, 1);
+    // this._executeQuery(query);
 		
 	},
-	
+	/*
 	_executeQuery: function(query){
 		
     fetch(query)
@@ -154,7 +165,7 @@ var PropertySearchPage = React.createClass({
 					errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
         });
       });
-	},
+	},*/
 	
 	_handleResponse(response) {
 		console.log("PropertySearchPage: Response code of nestoria request: " + response.application_response_code);
@@ -241,8 +252,19 @@ var PropertySearchPage = React.createClass({
         this.setState({state: 'Loading'});
 				console.log("Searching with geolocation: " + JSON.stringify(position));
 				//centre_point=51.684183,-3.431481
-				var query = urlForQueryAndPage('centre_point', position.coords.longitude + ',' + position.coords.latitude, 1);
-				this._executeQuery(query);
+				try{
+					NestoriaAPI.getProperties('centre_point', position.coords.longitude + ',' + position.coords.latitude, 1)
+						.done(res => this._handleResponse(res));
+				}catch(error){
+					console.log("PropertySearchPage: Error in executeQuery: " + error);
+					this.setState({
+						state: 'Error',
+						errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
+					});
+				}
+					
+				// var query = urlForQueryAndPage('centre_point', position.coords.longitude + ',' + position.coords.latitude, 1);
+				// this._executeQuery(query);
         
       },
       (error) => {
@@ -386,8 +408,19 @@ var PropertySearchPage = React.createClass({
 		if(location.place_name !== undefined){
 			this.setState({state: 'Loading'});
 			console.log("Searching for properties near: " + location.long_title);
-			var query = urlForQueryAndPage('place_name', location.place_name, 1);
-			this._executeQuery(query);
+			// var query = urlForQueryAndPage('place_name', location.place_name, 1);
+			// this._executeQuery(query);
+			try{
+			NestoriaAPI.getProperties('place_name', this.state.searchString, 1)
+				.done(res => this._handleResponse(res));
+			}catch(error){
+				console.log("PropertySearchPage: Error in executeQuery: " + error);
+				this.setState({
+					state: 'Error',
+					errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
+				});
+			}
+			
 		}
 	},
 	
@@ -395,7 +428,7 @@ var PropertySearchPage = React.createClass({
 	
 });
 
-
+/*
 function urlForQueryAndPage(key, value, pageNumber) {
   var data = {
       country: 'uk',
@@ -412,7 +445,7 @@ function urlForQueryAndPage(key, value, pageNumber) {
     .join('&');
 
   return 'http://api.nestoria.co.uk/api?' + querystring;
-};
+};*/
 
 var styles = StyleSheet.create({
 	container:{

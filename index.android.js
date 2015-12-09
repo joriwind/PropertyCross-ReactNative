@@ -22,7 +22,6 @@ var PropertySearchPage = require('./PropertySearchPage');
 var SearchResultsPage = require('./SearchResultsPage');
 var PropertyListingPage = require('./PropertyListingPage');
 var FavouritesPage = require('./FavouritesPage');
-var greetings = require('./greetings.js');
 
 var _navigator;
 

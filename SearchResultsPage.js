@@ -11,9 +11,13 @@ var {
 	ScrollView,
 } = React;
 
+var NestoriaAPI = require('./nestoriaAPI.js');
 
 var _navigator;
-var _toolbarTitle;
+var _currentPage = 1;
+var _propertyList;
+var _lengthList;
+var _totalLength;
 
 var MESSAGE_LOADMORE = 'Load more ...';
 var MESSAGE_LOADING = 'Loading ...';
@@ -21,7 +25,18 @@ var MESSAGE_LOADING = 'Loading ...';
 var SearchResultsPage = React.createClass({
 	
 	componentDidMount() {
-		this._loadSearchResults(this.props.searchResults);
+		_propertyList = this.props.searchResults;
+		_currentPage = parseInt(this.props.resultsInfo.pageSearchResults);
+		
+		if(this.props.resultsInfo){
+			_lengthList = this.props.resultsInfo.lengthSearchResults;
+			_totalLength = this.props.resultsInfo.total_results;
+		}else{
+			_lengthList = 0;
+			_totalLength = 0;
+		}
+		
+		this._loadSearchResults(_propertyList);
   },
 	
 	getInitialState: function() {
@@ -40,12 +55,6 @@ var SearchResultsPage = React.createClass({
 	
 	render: function(){
 		console.log('Navigated to resultspage');
-		if(this.props.resultsInfo){
-			_toolbarTitle = this.props.resultsInfo.lengthSearchResults
-											 + " of " + this.props.resultsInfo.total_results + " matches";
-		}else{
-			_toolbarTitle = 'Search results';
-		}
 		_navigator = this.props.navigator;
 		
 		console.log('Render search results'); //{Toolbar}
@@ -57,7 +66,7 @@ var SearchResultsPage = React.createClass({
 		);
 	
 	},
-	
+		
 	_renderList: function(){
 		return(
 		<ScrollView
@@ -81,7 +90,7 @@ var SearchResultsPage = React.createClass({
 		return(
 			<View style={styles.toolbar}>
 				<Text style={styles.toolbarButton}>{''}</Text>
-				<Text style={styles.toolbarTitle}>{_toolbarTitle}</Text>
+				<Text style={styles.toolbarTitle}>{_lengthList + " of " + _totalLength + " matches"}</Text>
 				<Text style={styles.toolbarButton}>{''}</Text>
 			</View>
 		);
@@ -90,7 +99,7 @@ var SearchResultsPage = React.createClass({
 	_renderRow(rowData) {
 		var price = rowData.price_formatted.split(' ')[0];
     return (
-      <TouchableHighlight onPress={() => this._onRowPressed(rowData.guid)}
+      <TouchableHighlight onPress={() => this._onRowPressed(rowData)}
 					underlayColor='#dddddd'>
 				<View>
 					<View style={styles.rowContainer}>
@@ -107,9 +116,8 @@ var SearchResultsPage = React.createClass({
     );
   },
 	
-	_onRowPressed(propertyGuid){
-		var property = this.props.searchResults.filter(prop => prop.guid === propertyGuid)[0];
-		console.log(JSON.stringify(property));
+	_onRowPressed(property){
+		console.log(property);
 		
 		this.props.navigator.push({
         id: 'PropertyListing',
@@ -120,8 +128,49 @@ var SearchResultsPage = React.createClass({
 	
 	_onClickLoadMore(){
 		this.setState({messageEOL: MESSAGE_LOADING});
+		_currentPage = _currentPage + 1;
+		console.log("Retrieving data from nestoria on page: " + _currentPage);
+		try{
+		NestoriaAPI.getProperties('place_name', this.props.resultsInfo.location.place_name, _currentPage)
+			.done(res => this._handleResponse(res));
+		}catch(error) {
+				console.log("PropertySearchPage: Error in executeQuery: " + error);
+				this.setState({
+					state: 'Error',
+					errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
+				});
+		}
 		
-		
+	},
+	
+	_handleResponse(response){
+		console.log("SearchResultsPage: Response code of nestoria request: " + response.application_response_code);
+				
+		if(response.application_response_code <200){
+			//Response was valid with a good location!
+			console.log("SearchResultsPage: Request from nestoria is valid");
+			if(response.listings.length == 0){
+				console.log("SearchResultsPage: listings is empty!");
+				
+			}else{
+				
+				var resultsInfo = {
+					location: response.locations[0], 
+					lengthSearchResults: response.listings.length, 
+					total_results: response.total_results,
+					pageSearchResults: response.page,
+					total_pages: response.total_pages
+					};
+					
+				_propertyList = _propertyList.concat(response.listings);
+				_lengthList = _lengthList + resultsInfo.lengthSearchResults;
+				_totalLength = resultsInfo.total_results;
+				this.setState({dataSource: this.state.dataSource.cloneWithRows(_propertyList),});
+			}
+		}else{
+			console.log("SearchResultsPage: The request to nestoria was not valid: " + response.application_response_code);
+		}
+		this.setState({messageEOL: MESSAGE_LOADMORE});
 	},
 	
 	
