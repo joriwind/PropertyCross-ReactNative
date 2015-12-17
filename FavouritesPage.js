@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-var React = require('react-native');
+var React = require("react-native");
 var {
   Image,
   StyleSheet,
@@ -15,17 +15,17 @@ var {
 
 
 var _navigator;
-var STORAGE_KEY_FAVS = '@Favs:key';
+var STORAGE_KEY_FAVS = "@Favs:key";
 
 
 var FavouritesPage = React.createClass({
-	
-	
-	componentDidMount() {
+
+
+	componentDidMount: function() {
 		console.log("Retrieving favs from storage!");
 		this._loadFavs().done();
   },
-	
+
 	getInitialState: function() {
 		// this._removeStorageFavs();
 		var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1!== r2});
@@ -33,7 +33,7 @@ var FavouritesPage = React.createClass({
 			favs: ds.cloneWithRows([]),
 		};
 	},
-	
+
 	async _loadFavs() {
     try {
 			console.log("Get Items from db, key: " + STORAGE_KEY_FAVS);
@@ -48,27 +48,27 @@ var FavouritesPage = React.createClass({
 			console.log("FavouritesPage: AsyncStorage GET error: " + error);
     }
   },
-	
+
 	async _addFav(value) {
-    
+
     try {
 			var storedValue = await AsyncStorage.getItem(STORAGE_KEY_FAVS);
-						
+
 			if(storedValue !== null){
 				var jsonArray = JSON.parse(storedValue);
 				var filterObject = jsonArray.filter(prop => prop.guid === value.guid)[0];
-				
+
 				if(filterObject === undefined){
 					var array = ([value]).concat(jsonArray);
 					await AsyncStorage.setItem(STORAGE_KEY_FAVS, JSON.stringify(array));
 					console.log('Added search to favs: ' + JSON.stringify(value));
-					
+
 				}else{
 					jsonArray.forEach(function(result, index) {
 						if(result.guid === filterObject.guid) {
 							//Set to above new element
 							jsonArray.splice(index, 1);
-						}    
+						}
 					});
 					var array = ([value]).concat(jsonArray);
 					await AsyncStorage.setItem(STORAGE_KEY_FAVS, JSON.stringify(array));
@@ -91,8 +91,8 @@ var FavouritesPage = React.createClass({
       console.log('FavouritesPage: AsyncStorage REMOVE error: ' + error.message);
     }
   },
-	
-	
+
+
 	render: function(){
 		_navigator = this.props.navigator;
 		console.log("Favourites length: " + this.state.favs._cachedRowCount);
@@ -104,7 +104,7 @@ var FavouritesPage = React.createClass({
 						<Text style={styles.text}>You have not added any properties to your favourites</Text>
 					</View>
 				</View>
-			
+        
 			);
 		}else{
 			return(
@@ -113,9 +113,9 @@ var FavouritesPage = React.createClass({
 					<ScrollView
 					automaticallyAdjustContentInsets={false}
 					scrollEventThrottle={200}
-					
+
 					>
-					
+
 						<ListView
 							dataSource={this.state.favs}
 							renderRow={this._renderRowFavList}
@@ -125,7 +125,7 @@ var FavouritesPage = React.createClass({
 			);
 		}
 	},
-	
+
 	_renderToolbar: function(){
 		return(
 			<View style={styles.toolbar}>
@@ -135,7 +135,7 @@ var FavouritesPage = React.createClass({
 			</View>
 		);
 	},
-	
+
 	_renderRowFavList: function(rowData){
 		var price = rowData.price_formatted.split(' ')[0];
 		return(
@@ -146,7 +146,7 @@ var FavouritesPage = React.createClass({
 						<Image style={styles.thumb} source={{ uri: rowData.img_url }} />
 						<View  style={styles.textContainer}>
 							<Text style={styles.price}>£{price}</Text>
-							<Text style={styles.title} 
+							<Text style={styles.title}
 										numberOfLines={1}>{rowData.title}</Text>
 						</View>
 					</View>
@@ -155,16 +155,16 @@ var FavouritesPage = React.createClass({
 			</TouchableHighlight>
 		);
 	},
-	
+
 	_onClickList: function(property){
 		this.props.navigator.push({
         id: 'PropertyListing',
         property:  property,
       });
 	},
-	
-	
-	
+
+
+
 });
 
 var styles = StyleSheet.create({
@@ -174,18 +174,18 @@ var styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-	
+
 	FavView: {
 		flexDirection: 'column',
 		paddingTop: 5,
 		paddingLeft: 5,
 		paddingRight: 5,
 	},
-	
+
 	text: {
 		fontSize: 19,
 	},
-	
+
 	FavListRow: {
 		padding: 10,
 		marginTop: 1,
@@ -193,7 +193,7 @@ var styles = StyleSheet.create({
 		borderColor: '#81c04d',
 		borderWidth: 1,
 	},
-	
+
 	thumb: {
     width: 80,
     height: 80,
@@ -219,8 +219,8 @@ var styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10
   },
-	
-	
+
+
 	toolbar: {
     backgroundColor: '#81c04d',
 		paddingTop:10,
@@ -237,7 +237,7 @@ var styles = StyleSheet.create({
 		fontSize:20,
 		width: 70,
 		color: '#fff',
-		textAlign: 'center',		
+		textAlign: 'center',
 	},
 	toolbarTitle:{
 		fontSize:20,

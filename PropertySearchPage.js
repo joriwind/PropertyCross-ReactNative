@@ -1,3 +1,7 @@
+/**
+ *
+ * 
+ */
 'use strict';
 
 var React = require('react-native');
@@ -41,7 +45,7 @@ var PropertySearchPage = React.createClass({
 			this._loadInitialStateRecentSearches().done();
 		}
   },
-	
+
 	async _loadInitialStateRecentSearches() {
     try {
 			console.log("Get Item from db, key: " + STORAGE_KEY_RECENT);
@@ -59,28 +63,28 @@ var PropertySearchPage = React.createClass({
       this.setState({state: 'Error', errorMessage: "Serious error!"});
     }
   },
-	
+
 	async _addValueRecentSearches(value) {
-    
+
     try {
 			var storedValue = await AsyncStorage.getItem(STORAGE_KEY_RECENT);
-						
+
 			if(storedValue !== null){
 				var jsonArray = JSON.parse(storedValue);
 				var filterObject = jsonArray.filter(prop => prop.resultsInfo.location.place_name === value.resultsInfo.location.place_name)[0];
 				console.log("Filtered object: " + filterObject);
-				
+
 				if(filterObject === undefined){
 					var array = ([value]).concat(jsonArray);
 					await AsyncStorage.setItem(STORAGE_KEY_RECENT, JSON.stringify(array));
 					console.log('Added search to recentSearches: ' + JSON.stringify(value.resultsInfo));
-					
+
 				}else{
 					jsonArray.forEach(function(result, index) {
 						if(result.resultsInfo.location.place_name === filterObject.resultsInfo.location.place_name) {
 							//Set to above new element
 							jsonArray.splice(index, 1);
-						}    
+						}
 					});
 					var array = ([value]).concat(jsonArray);
 					await AsyncStorage.setItem(STORAGE_KEY_RECENT, JSON.stringify(array));
@@ -103,25 +107,25 @@ var PropertySearchPage = React.createClass({
       console.log('AsyncStorage REMOVE error: ' + error.message);
     }
   },
-	
+
 	render: function(){
 		_toolbarTitle = 'PropertyCross';
 		_navigator = this.props.navigator;
-		
+
 		SearchUI = this._renderSearchUI();
 		ResultUI = this._renderResultUI();
 		Toolbar = this._renderToolbar();
 		return (
-		
+
 			<View style = {styles.container}>
 				{Toolbar}
 				{SearchUI}
 				{ResultUI}
 			</View>
 		);
-	
+
 	},
-	
+
 	getInitialState: function() {
 		STORAGE_KEY_RECENT = '@RecentSearches:key';
 		//this._removeStorageRecentSearches();
@@ -134,7 +138,7 @@ var PropertySearchPage = React.createClass({
 			locations: dsLocations.cloneWithRows([{long_title: "No locations found"}]),
 		};
 	},
-	
+
 	_onClickGo: function(){
 		this.setState({ state: 'Loading' });
 		console.log("Searching for: " + this.state.searchString);
@@ -150,11 +154,11 @@ var PropertySearchPage = React.createClass({
 		}
 		// var query = urlForQueryAndPage('place_name', this.state.searchString, 1);
     // this._executeQuery(query);
-		
+
 	},
 	/*
 	_executeQuery: function(query){
-		
+
     fetch(query)
       .then(response => response.json())
       .then(json => this._handleResponse(json.response))
@@ -166,7 +170,7 @@ var PropertySearchPage = React.createClass({
         });
       });
 	},*/
-	
+
 	_handleResponse(response) {
 		console.log("PropertySearchPage: Response code of nestoria request: " + response.application_response_code);
 		var nextState = 'Error';
@@ -180,11 +184,11 @@ var PropertySearchPage = React.createClass({
 			if(response.application_response_code == 200){
 				console.log("PropertySearchPage: Request from nestoria has suggested locations");
 				nextState = 'ListedLocations'
-				
+
 			}else if(response.application_response_code == 202){
 				console.log("PropertySearchPage: Request from nestoria has suggested locations");
 				nextState = 'ListedLocations'
-				
+
 			}else{
 				console.log("PropertySearchPage: The request to nestoria was not valid(Bad location): " + response.application_response_code);
 				nextState = 'Error';
@@ -197,28 +201,28 @@ var PropertySearchPage = React.createClass({
 			this.setState({state: 'Error', errorMessage: MESSAGE_LOCATION_MATCH_ERROR});
 			return;
 		}
-		
+
 		if(nextState == 'Initial'){
 			//Response was valid with a good location!
 			if(response.listings.length == 0){
 				console.log("PropertySearchPage: listings is empty!");
 				nextState = 'Error';
 				this.setState({state: 'Error', errorMessage: MESSAGE_ZERO_ERROR});
-				
+
 			}else{
-				
+
 				var resultsInfo = {
-					location: response.locations[0], 
-					lengthSearchResults: response.listings.length, 
+					location: response.locations[0],
+					lengthSearchResults: response.listings.length,
 					total_results: response.total_results,
 					pageSearchResults: response.page,
 					total_pages: response.total_pages
 					};
-						
+
 				//Add search to asyncstorage.
 				var storageValue = {resultsInfo: resultsInfo};
 				this._addValueRecentSearches(storageValue);
-				
+
 				if (response.application_response_code.substr(0, 1) === '1') {
 					this.props.navigator.push({
 						id: 'SearchResults',
@@ -239,10 +243,10 @@ var PropertySearchPage = React.createClass({
 				state: nextState,	//ListedLocations
 				locations: this.state.locations.cloneWithRows(locations),
 			});
-			
+
 		}
   },
-	
+
 	_onClickMyLocation: function(){
 		console.log("Searching for position!");
 		this.setState({state: 'Loading'});
@@ -262,24 +266,24 @@ var PropertySearchPage = React.createClass({
 						errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
 					});
 				}
-					
+
 				// var query = urlForQueryAndPage('centre_point', position.coords.longitude + ',' + position.coords.latitude, 1);
 				// this._executeQuery(query);
-        
+
       },
       (error) => {
 			console.log("PropertySearchPage: error in geolocation:" + JSON.stringify(error));
 			this.setState({state:'Error', errorMessage: MESSAGE_LOCATION_NF_ERROR});
-						
+
 			},
       { timeout: 5000}
     );
 	},
-	
+
 	_navigateToFaves: function(){
 		this.props.navigator.push({id: 'Favourites'})
 	},
-	
+
 	_renderToolbar: function(){
 		return(
 			<View style={styles.toolbar}>
@@ -291,9 +295,9 @@ var PropertySearchPage = React.createClass({
 			</View>
 		);
 	},
-	
+
 	_renderSearchUI: function(){
-		
+
 		return(
 			<View style={styles.SearchUI}>
 				<Text style = {styles.text}>
@@ -301,31 +305,31 @@ var PropertySearchPage = React.createClass({
 					<Text>buy. You can search by place-name, postcode, or</Text>
 					<Text> click 'My location', to search in your current location</Text>
 				</Text>
-				<TextInput 
+				<TextInput
 					style={styles.textInput}
 					onChangeText={(searchString) => this.setState({searchString})}
 					onSubmitEditing={this._onClickGo}
 					value={this.state.searchString}
 				/>
 				<View style = {{ flexDirection: 'row'}}>
-					<TouchableOpacity 
-						style = {styles.button} 
+					<TouchableOpacity
+						style = {styles.button}
 						onPress = {this._onClickGo}>
 						<Text style= {styles.buttonText}>Go</Text>
 					</TouchableOpacity>
-					<TouchableOpacity 
-						style = {styles.button} 
+					<TouchableOpacity
+						style = {styles.button}
 						onPress = {this._onClickMyLocation}>
 						<Text style= {styles.buttonText}>My location</Text>
 					</TouchableOpacity>
-					
+
 				</View>
 			</View>
 		);
 	},
-	
+
 	_renderResultUI: function(){
-		
+
 		switch(this.state.state){
 			case 'Initial':
 				return(
@@ -338,7 +342,7 @@ var PropertySearchPage = React.createClass({
 							renderRow={this._renderRowRecentSearch}
 						/>
 						</View>
-						
+
 					</View>
 				);
 			case 'ListedLocations':
@@ -352,7 +356,7 @@ var PropertySearchPage = React.createClass({
 							renderRow={this._renderRowLocations}
 						/>
 						</View>
-						
+
 					</View>
 				);
 			case 'Loading':
@@ -365,12 +369,12 @@ var PropertySearchPage = React.createClass({
 				return(
 					<View style = {styles.ResultUI}>
 						<Text style = {styles.text}>{this.state.errorMessage}</Text>
-						
+
 					</View>
 				);
 		}
 	},
-	
+
 	_renderRowRecentSearch: function(rowData){
 		return (
       <TouchableHighlight onPress={() => this._onClickList(rowData.resultsInfo.location)}
@@ -379,15 +383,15 @@ var PropertySearchPage = React.createClass({
 					<View style={styles.rowRecentSearch}>
 						<Text>{rowData.resultsInfo.location.long_title} </Text>
 						<Text>({rowData.resultsInfo.total_results})</Text>
-						
+
 					</View>
 					<View style={styles.separator}/>
 				</View>
 			</TouchableHighlight>
     );
-		
+
 	},
-	
+
 	_renderRowLocations: function(rowData){
 		return (
       <TouchableHighlight onPress={() => this._onClickList(rowData)}
@@ -395,15 +399,15 @@ var PropertySearchPage = React.createClass({
 				<View>
 					<View style={styles.rowRecentSearch}>
 						<Text>{rowData.long_title}</Text>
-						
+
 					</View>
 					<View style={styles.separator}/>
 				</View>
 			</TouchableHighlight>
     );
-		
+
 	},
-	
+
 	_onClickList: function(location){
 		if(location.place_name !== undefined){
 			this.setState({state: 'Loading'});
@@ -420,12 +424,12 @@ var PropertySearchPage = React.createClass({
 					errorMessage: MESSAGE_NETWORK_CONNECTION_ERROR,
 				});
 			}
-			
+
 		}
 	},
-	
-	
-	
+
+
+
 });
 
 /*
@@ -453,7 +457,7 @@ var styles = StyleSheet.create({
 		flex: 1,
 		flexDirection: 'column',
 	},
-	
+
   SearchUI: {
     paddingLeft: 5,
 		paddingRight: 5,
@@ -466,27 +470,27 @@ var styles = StyleSheet.create({
 	button: {
     borderColor: '#111',
 		borderWidth: 3,
-		
+
 		padding:10,
 		marginLeft:5,
 		marginRight:5,
   },
-	
+
 	buttonText: {
 		//fontSize:20,
 		//backgroundColor: 'transparent',
 		color: '#111',
-		
+
 	},
-	
+
 	textInput: {
 		height: 40,
-		fontSize: 16, 
-		borderColor: 'gray', 
+		fontSize: 16,
+		borderColor: 'gray',
 		borderWidth: 1
 	},
-	
-	
+
+
 	ResultUI: {
 		paddingTop: 10,
 		paddingLeft: 5,
@@ -495,7 +499,7 @@ var styles = StyleSheet.create({
 		flexDirection: 'column',
 
 	},
-	
+
 	ResultUI_loading: {
 		paddingTop: 5,
 		flex: 1,
@@ -503,13 +507,13 @@ var styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
-	
-	
+
+
 	text:{
 		fontSize: 15,
 		flex: 1,
 	},
-	
+
 	toolbar:{
 			backgroundColor:'#81c04d',
 			paddingTop:8,
@@ -531,8 +535,8 @@ var styles = StyleSheet.create({
 			fontWeight:'bold',
 			flex:1                //Step 3
 	},
-	
-	
+
+
 	recentSearches:{
 		flexDirection: 'column',
 		paddingTop: 10,
@@ -540,19 +544,19 @@ var styles = StyleSheet.create({
 		paddingLeft: 5,
 		paddingRight: 5,
 		flex:1,
-		
+
 	},
 	recentSearchesList:{
 		borderColor: '#000',
 		borderWidth: 1,
 		flex:1,
-		
+
 	},
 	rowRecentSearch:{
 		flexDirection: 'row',
 		padding: 10,
 	},
-	
+
 });
 
 module.exports = PropertySearchPage;

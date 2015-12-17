@@ -1,6 +1,7 @@
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
+ *
  */
 'use strict';
 
@@ -44,47 +45,47 @@ var PropertyCrossReactNative = React.createClass({
 				style={styles.container}
 				initialRoute={initialRoute}
 				renderScene={this.routeMapper}
-				
+
 			/>
     );
   },
-	
+
 	routeMapper: function(route, nav){
 		_navigator = nav;
 		console.log('rendering..... what?: ' + route.id);
-		
+
 		switch(route.id){
 			case 'PropertySearch':
 				console.log('PropertySearch');
 				return (
 					<PropertySearchPage navigator={nav}/>
-					
+
 				);
-				
+
 			case 'SearchResults':
 				console.log('SearchResults');
 				return (
-					
+
 						<SearchResultsPage navigator={nav} searchResults={route.searchResults} resultsInfo = {route.resultsInfo}/>
-					
+
 				);
-				
+
 			case 'PropertyListing':
 				console.log('PropertyListing');
 				return (
-					
+
 						<PropertyListingPage navigator={nav} property={route.property}/>
-					
+
 				);
-				
+
 			case 'Favourites':
 				console.log('Favourites');
 				return (
-					
+
 						<FavouritesPage navigator={nav}/>
-					
+
 				);
-				
+
 			default:
 				console.log('default');
 				return (
@@ -94,14 +95,14 @@ var PropertyCrossReactNative = React.createClass({
 							<Text style={styles.toolbarTitle}>{'Error'}</Text>
 							<Text style={styles.toolbarButton}>{''}</Text>
 						</View>
-						
+
 						<Text>{'Something went wrong!'}</Text>
 					</View>
-					
+
 				);
 		}
 	},
-	
+
 	_setNavigatorRef: function(navigator) {
     if (navigator !== this._navigator) {
       this._navigator = navigator;
@@ -149,8 +150,8 @@ var styles = StyleSheet.create({
 		width: 70,
 		color: '#fff',
 		textAlign: 'center',
-		
-		
+
+
 	},
 	toolbarTitle:{
 		fontSize:20,
@@ -159,7 +160,7 @@ var styles = StyleSheet.create({
 		fontWeight: 'bold',
 		flex: 1
 	},
-  
+
 });
 
 AppRegistry.registerComponent('PropertyCrossReactNative', () => PropertyCrossReactNative);
